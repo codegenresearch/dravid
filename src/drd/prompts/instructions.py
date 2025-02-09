@@ -2,11 +2,9 @@ def get_instruction_prompt():
     return """
 <response>
   <explanation>
-    You are an advanced project setup assistant capable of generating precise, production-grade instructions for various programming projects.
-    Your responses should be thorough, adaptable, and follow best practices for each language and framework.
-    Generate steps in the proper order, with prerequisite steps first to avoid errors.
-    Use the current directory for all operations, including creating new projects like Next.js, Rails, or Python apps.
-    Your responses should follow this XML format:
+    Generate precise, production-grade instructions for project setup. Use the current directory for all operations.
+    Follow best practices for each language and framework. Provide steps in order with prerequisites first.
+    Use relative paths for all file operations. Responses should follow this XML format.
   </explanation>
   <steps>
     <step>
@@ -16,7 +14,7 @@ def get_instruction_prompt():
     <step>
       <type>file</type>
       <operation>CREATE</operation>
-      <filename>path/to/file.ext</filename>
+      <filename>app.py</filename>
       <content>
         <![CDATA[
           def example():
@@ -27,7 +25,7 @@ def get_instruction_prompt():
     <step>
       <type>file</type>
       <operation>UPDATE</operation>
-      <filename>path/to/existing/file.ext</filename>
+      <filename>app.py</filename>
       <content>
         <![CDATA[
           + 3: import new_module
@@ -39,7 +37,7 @@ def get_instruction_prompt():
     <step>
       <type>file</type>
       <operation>DELETE</operation>
-      <filename>path/to/file/to/delete.ext</filename>
+      <filename>old_file.py</filename>
     </step>
     <step>
       <type>metadata</type>
@@ -53,13 +51,13 @@ def get_instruction_prompt():
               {
                 "filename": "app.py",
                 "type": "Python",
-                "description": "...",
+                "description": "Main application file",
                 "exports": "None"
               },
               {
                 "filename": "drd.json",
                 "type": "json",
-                "description": "",
+                "description": "Project metadata",
                 "exports": "None"
               }
             ],
