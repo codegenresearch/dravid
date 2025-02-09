@@ -35,7 +35,7 @@ def monitoring_handle_error_with_dravid(error, line, monitor):
             print_info(f"  - Read content of {file}")
 
     file_context = "\n".join(
-        [f"Content of {file}:\n{content}" for file, content in file_contents.items()]
+        [f"Content of {file}:\n{content}\n" for file, content in file_contents.items()]
     )
 
     error_query = get_error_resolution_prompt(
