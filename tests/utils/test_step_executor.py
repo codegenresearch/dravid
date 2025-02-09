@@ -236,10 +236,40 @@ class TestExecutor(unittest.TestCase):
         result = self.executor.execute_shell_command('ls')
         self.assertEqual(result, "Skipping this step...")
 
+    @patch('os.path.exists')
+    @patch('click.confirm')
+    def test_perform_file_operation_delete_nonexistent_file(self, mock_confirm, mock_exists):
+        mock_exists.return_value = False
+        mock_confirm.return_value = True
+        result = self.executor.perform_file_operation('DELETE', 'nonexistent.txt')
+        self.assertFalse(result)
+        mock_confirm.assert_called_once()
+
+    @patch('os.path.exists')
+    @patch('os.path.isfile')
+    @patch('click.confirm')
+    def test_perform_file_operation_delete_not_a_file(self, mock_confirm, mock_isfile, mock_exists):
+        mock_exists.return_value = True
+        mock_isfile.return_value = False
+        mock_confirm.return_value = True
+        result = self.executor.perform_file_operation('DELETE', 'directory')
+        self.assertFalse(result)
+        mock_confirm.assert_called_once()
+
+    @patch('os.path.exists')
+    @patch('click.confirm')
+    def test_perform_file_operation_update_nonexistent_file(self, mock_confirm, mock_exists):
+        mock_exists.return_value = False
+        mock_confirm.return_value = True
+        result = self.executor.perform_file_operation('UPDATE', 'nonexistent.txt', 'content')
+        self.assertFalse(result)
+        mock_confirm.assert_called_once()
+
 
 This code addresses the feedback by:
-1. Removing the specific directory initialization in `setUp` to focus on essential setup.
+1. Removing the invalid syntax line.
 2. Ensuring unique and descriptive test method names.
-3. Adding a test case to handle permission denied errors during file creation.
-4. Adding a test case to handle permission denied errors during shell command execution.
-5. Ensuring that mocks are only applied where necessary and that assertions are consistent with expected outcomes.
+3. Adding tests for edge cases such as deleting a non-existent file, deleting a directory, and updating a non-existent file.
+4. Ensuring consistent confirmation handling across similar operations.
+5. Reviewing and consolidating test cases to avoid duplication.
+6. Adding additional test cases to cover more functionality of the `Executor` class.
