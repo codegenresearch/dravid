@@ -29,7 +29,6 @@ def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=F
                 output = handle_file_operation(cmd, executor, metadata_manager)
                 all_outputs.append(f"Step {i}/{total_steps}: File operation - {cmd['operation']} - {cmd['filename']} - {output}")
             elif cmd['type'] == 'metadata':
-                print_info(f"Performing metadata operation: {cmd['operation']}")
                 output = handle_metadata_operation(cmd, metadata_manager)
                 all_outputs.append(f"Step {i}/{total_steps}: Metadata operation - {cmd['operation']} - {output}")
 
@@ -76,7 +75,6 @@ def handle_file_operation(cmd, executor, metadata_manager):
 def handle_metadata_operation(cmd, metadata_manager):
     if cmd['operation'] == 'UPDATE_FILE':
         if metadata_manager.update_metadata_from_file(cmd['filename']):
-            print_success(f"Updated metadata for file: {cmd['filename']}")
             return f"Updated metadata for {cmd['filename']}"
         else:
             raise Exception(f"Failed to update metadata for file: {cmd['filename']}")
@@ -100,7 +98,6 @@ def update_file_metadata(cmd, metadata_manager, executor):
         description,
         exports
     )
-    print_success(f"Metadata updated for file: {cmd['filename']}")
 
 
 def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, previous_context="", debug=False):
