@@ -16,9 +16,11 @@ class TestProjectMetadataManager(unittest.TestCase):
         self.project_dir = '/fake/project/dir'
         self.manager = ProjectMetadataManager(self.project_dir)
 
-    @patch('os.path.exists', return_value=True)
+    @patch('os.path.exists')
     @patch('builtins.open', new_callable=mock_open, read_data='{"project_name": "Test Project"}')
-    def test_load_metadata(self, mock_file, _):
+    def test_load_metadata(self, mock_file, mock_exists):
+        # Mock os.path.exists to return True
+        mock_exists.return_value = True
         # Test loading metadata from a valid JSON file
         metadata = self.manager.load_metadata()
         self.assertEqual(metadata["project_name"], "Test Project")
@@ -82,19 +84,24 @@ class TestProjectMetadataManager(unittest.TestCase):
         info = self.manager.get_dev_server_info()
         self.assertEqual(info, self.manager.metadata['dev_server'])
 
-    @patch('os.path.exists', return_value=True)
-    @patch('builtins.open', new_callable=mock_open, read_data='print("Hello, World!")')
+    @patch('os.path.exists')
+    @patch('builtins.open', new_callable=mock_open, read_data='{"filename": "test.py", "content": "print(\\"Hello, World!\\")"}')
     @patch.object(ProjectMetadataManager, 'update_file_metadata')
-    def test_update_metadata_from_file(self, mock_update, mock_file, _):
+    def test_update_metadata_from_file(self, mock_update, mock_file, mock_exists):
+        # Mock os.path.exists to return True
+        mock_exists.return_value = True
         # Test updating metadata from a file with valid JSON content
         result = self.manager.update_metadata_from_file()
         self.assertTrue(result)
         mock_update.assert_called_once_with("test.py", "py", 'print("Hello, World!")')
 
-    @patch('os.path.exists', return_value=True)
+    @patch('os.path.exists')
     @patch('builtins.open', new_callable=mock_open)
     @patch.object(ProjectMetadataManager, 'save_metadata')
-    def test_update_metadata_from_file_with_new_data(self, mock_save, mock_file, _):
+    def test_update_metadata_from_file_with_new_data(self, mock_save, mock_file, mock_exists):
+        # Mock os.path.exists to return True
+        mock_exists.return_value = True
+
         # Initial metadata
         initial_metadata = {
             "project_name": "old_project",
