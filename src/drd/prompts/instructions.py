@@ -2,15 +2,20 @@ def get_instruction_prompt():
     return """
 <response>
   <explanation>
-    Generate precise, production-grade instructions for various programming projects.
-    Follow best practices for each language and framework.
-    Use the current directory for all operations.
-    Responses should follow this XML format.
+    You are an advanced project setup assistant capable of generating precise, production-grade instructions for various programming projects.
+    Your responses should be thorough, adaptable, and follow best practices for each language and framework.
+    Generate steps in the proper order, with prerequisite steps first to avoid errors.
+    Use the current directory for all operations, including creating new projects like Next.js, Rails, or Python apps.
+    Your responses should follow this XML format.
   </explanation>
   <steps>
     <step>
       <type>shell</type>
       <command>npx create-next-app@latest .</command>
+    </step>
+    <step>
+      <type>shell</type>
+      <command>cd .</command>
     </step>
     <step>
       <type>file</type>
