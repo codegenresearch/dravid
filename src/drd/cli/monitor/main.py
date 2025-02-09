@@ -2,10 +2,11 @@ import re
 import os
 from .server_monitor import DevServerMonitor
 from .error_resolver import monitoring_handle_error_with_dravid
-from ...utils import print_info
+from ...utils import print_info, print_prompt
 
 
 def run_dev_server_with_monitoring(command: str):
+    print_info("Starting server monitor...")
     error_handlers = {
         r"(?:Cannot find module|Module not found|ImportError|No module named)": handle_module_not_found,
         r"(?:SyntaxError|Expected|Unexpected token)": handle_syntax_error,
@@ -15,12 +16,12 @@ def run_dev_server_with_monitoring(command: str):
     monitor = DevServerMonitor(current_dir, error_handlers, command)
     try:
         monitor.start()
-        print_info("👓 server monitor started. Press Ctrl+C to stop.")
+        print_prompt("Server monitor started. Press Ctrl+C to stop.")
         while not monitor.should_stop.is_set():
             pass
         print_info("Server monitor has ended.")
     except KeyboardInterrupt:
-        print_info("Stopping server...")
+        print_prompt("Stopping server...")
     finally:
         monitor.stop()
 
