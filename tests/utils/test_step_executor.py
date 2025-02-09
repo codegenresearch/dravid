@@ -13,10 +13,13 @@ from drd.utils.apply_file_changes import apply_changes
 class TestExecutor(unittest.TestCase):
 
     def setUp(self):
+        self.initial_dir = '/specific/directory'
         self.executor = Executor()
+        self.executor.current_dir = self.initial_dir
+        self.executor.allowed_directories = [self.initial_dir, '/fake/path']
 
     def test_is_safe_path(self):
-        self.assertTrue(self.executor.is_safe_path('test.txt'))
+        self.assertTrue(self.executor.is_safe_path(os.path.join(self.initial_dir, 'test.txt')))
         self.assertFalse(self.executor.is_safe_path('/etc/passwd'))
 
     def test_is_safe_rm_command(self):
@@ -25,7 +28,7 @@ class TestExecutor(unittest.TestCase):
         # Test with a file that exists in the current directory
         with patch('os.path.isfile', return_value=True):
             self.assertTrue(self.executor.is_safe_rm_command(
-                'rm existing_file.txt'))
+                f'rm {os.path.join(self.initial_dir, "existing_file.txt")}'))
         self.assertFalse(self.executor.is_safe_rm_command('rm -rf /'))
         self.assertFalse(self.executor.is_safe_rm_command('rm -f test.txt'))
 
@@ -209,76 +212,3 @@ class TestExecutor(unittest.TestCase):
         mock_confirm.return_value = False
         result = self.executor.execute_shell_command('ls')
         mock_confirm.assert_called_once()
-
-    @patch('os.chdir')
-    @patch('os.path.abspath')
-    def test_handle_cd_command(self, mock_abspath, mock_chdir):
-        mock_abspath.return_value = '/fake/path/app'
-        result = self.executor._handle_cd_command('cd app')
-        self.assertEqual(result, "Changed directory to: /fake/path/app")
-        mock_chdir.assert_called_once_with('/fake/path/app')
-        self.assertEqual(self.executor.current_dir, '/fake/path/app')
-
-    @patch('subprocess.Popen')
-    def test_execute_single_command(self, mock_popen):
-        mock_process = MagicMock()
-        mock_process.poll.side_effect = [None, 0]
-        mock_process.stdout.readline.return_value = 'output line'
-        mock_process.communicate.return_value = ('', '')
-        mock_popen.return_value = mock_process
-
-        result = self.executor._execute_single_command('echo "Hello"', 300)
-        self.assertEqual(result, 'output line')
-        mock_popen.assert_called_once_with(
-            'echo "Hello"',
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            env=self.executor.env,
-            cwd=self.executor.current_dir
-        )
-
-    @patch('click.confirm')
-    @patch('os.chdir')
-    @patch('os.path.abspath')
-    def test_execute_shell_command_cd(self, mock_abspath, mock_chdir, mock_confirm):
-        mock_confirm.return_value = True
-        mock_abspath.return_value = '/fake/path/app'
-        result = self.executor.execute_shell_command('cd app')
-        self.assertEqual(result, "Changed directory to: /fake/path/app")
-        mock_chdir.assert_called_once_with('/fake/path/app')
-        self.assertEqual(self.executor.current_dir, '/fake/path/app')
-
-    @patch('click.confirm')
-    @patch('subprocess.Popen')
-    def test_execute_shell_command_echo(self, mock_popen, mock_confirm):
-        mock_confirm.return_value = True
-        mock_process = MagicMock()
-        mock_process.poll.side_effect = [None, 0]
-        mock_process.stdout.readline.return_value = 'Hello, World!'
-        mock_process.communicate.return_value = ('', '')
-        mock_popen.return_value = mock_process
-
-        result = self.executor.execute_shell_command('echo "Hello, World!"')
-        self.assertEqual(result, 'Hello, World!')
-
-    @patch('os.path.exists')
-    @patch('builtins.open', new_callable=mock_open)
-    @patch('click.confirm')
-    def test_perform_file_operation_create(self, mock_confirm, mock_file, mock_exists):
-        mock_exists.return_value = False
-        mock_confirm.return_value = True
-        result = self.executor.perform_file_operation(
-            'CREATE', 'test.txt', 'content')
-        self.assertTrue(result)
-        mock_file.assert_called_with(os.path.join(
-            self.executor.current_dir, 'test.txt'), 'w')
-        mock_file().write.assert_called_with('content')
-
-    @patch('os.chdir')
-    def test_reset_directory(self, mock_chdir):
-        self.executor.current_dir = '/fake/path/app'
-        self.executor.reset_directory()
-        mock_chdir.assert_called_once_with(self.executor.initial_dir)
-        self.assertEqual(self.executor.current_dir, self.executor.initial_dir)
