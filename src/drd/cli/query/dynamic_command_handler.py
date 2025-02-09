@@ -1,22 +1,19 @@
 import traceback
 import click
 from ...api.main import call_dravid_api
-from ...utils import print_error, print_success, print_info, print_step, print_debug
+from ...utils import print_error, print_success, print_info
 from ...metadata.common_utils import generate_file_description
 from ...prompts.error_resolution_prompt import get_error_resolution_prompt
 
 
-def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=False):
+def execute_commands(commands, executor, metadata_manager, is_fix=False):
     all_outputs = []
     total_steps = len(commands)
 
     for i, cmd in enumerate(commands, 1):
         step_description = "fix" if is_fix else "command"
-        print_step(i, total_steps,
-                   f"Processing {cmd['type']} {step_description}...")
 
         if cmd['type'] == 'explanation':
-            print_info(f"Explanation: {cmd['content']}")
             all_outputs.append(
                 f"Step {i}/{total_steps}: Explanation - {cmd['content']}")
             continue
@@ -31,13 +28,9 @@ def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=F
                 all_outputs.append(
                     f"Step {i}/{total_steps}: File operation - {cmd['operation']} - {cmd['filename']} - {output}")
             elif cmd['type'] == 'metadata':
-                print(cmd, "---")
                 output = handle_metadata_operation(cmd, metadata_manager)
                 all_outputs.append(
                     f"Step {i}/{total_steps}: Metadata operation - {cmd['operation']} - {output}")
-
-            if debug:
-                print_debug(f"Completed step {i}/{total_steps}")
 
         except Exception as e:
             error_message = f"Step {i}/{total_steps}: Error executing {step_description}: {cmd}\nError details: {str(e)}"
@@ -49,19 +42,15 @@ def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=F
 
 
 def handle_shell_command(cmd, executor):
-    print_info(f"Executing shell command: {cmd['command']}")
     output = executor.execute_shell_command(cmd['command'])
     if output is None:
         raise Exception(f"Command failed: {cmd['command']}")
-    print_success(f"Successfully executed: {cmd['command']}")
     if output:
         click.echo(f"Command output:\n{output}")
     return output
 
 
 def handle_file_operation(cmd, executor, metadata_manager):
-    print_info(
-        f"Performing file operation: {cmd['operation']} on {cmd['filename']}")
     operation_performed = executor.perform_file_operation(
         cmd['operation'],
         cmd['filename'],
@@ -69,8 +58,6 @@ def handle_file_operation(cmd, executor, metadata_manager):
         force=True
     )
     if operation_performed:
-        print_success(
-            f"Successfully performed {cmd['operation']} on file: {cmd['filename']}")
         if cmd['operation'] in ['CREATE', 'UPDATE']:
             update_file_metadata(cmd, metadata_manager, executor)
         return "Success"
@@ -81,8 +68,7 @@ def handle_file_operation(cmd, executor, metadata_manager):
 
 def handle_metadata_operation(cmd, metadata_manager):
     if cmd['operation'] == 'UPDATE_FILE':
-        if metadata_manager.update_metadata_from_file():
-            print_success(f"Updated metadata for file: {cmd['filename']}")
+        if metadata_manager.update_metadata_from_file(cmd['filename']):
             return f"Updated metadata for {cmd['filename']}"
         else:
             raise Exception(
@@ -109,7 +95,7 @@ def update_file_metadata(cmd, metadata_manager, executor):
     )
 
 
-def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, previous_context="", debug=False):
+def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, previous_context=""):
     if depth > 3:
         print_error(
             "Max error handling depth reached. Unable to resolve the issue.")
@@ -128,7 +114,6 @@ def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, pr
     )
 
     print_info("Sending error information to dravid for analysis...")
-    print_info("LLM calls to be made: 1")
 
     try:
         fix_commands = call_dravid_api(
@@ -141,18 +126,16 @@ def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, pr
     print_info("Applying dravid's suggested fix...")
 
     fix_applied, step_completed, error_message, all_outputs = execute_commands(
-        fix_commands, executor, metadata_manager, is_fix=True, debug=debug
+        fix_commands, executor, metadata_manager, is_fix=True
     )
 
     if fix_applied:
         print_success("All fix steps successfully applied.")
-        print_info("Fix application details:")
         click.echo(all_outputs)
         return True
     else:
         print_error(f"Failed to apply the fix at step {step_completed}.")
         print_error(f"Error message: {error_message}")
-        print_info("Fix application details:")
         click.echo(all_outputs)
 
         return handle_error_with_dravid(
@@ -161,6 +144,5 @@ def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, pr
             executor,
             metadata_manager,
             depth + 1,
-            all_outputs,
-            debug
+            all_outputs
         )
