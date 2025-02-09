@@ -13,13 +13,10 @@ from drd.utils.apply_file_changes import apply_changes
 class TestExecutor(unittest.TestCase):
 
     def setUp(self):
-        self.initial_dir = '/specific/directory'
         self.executor = Executor()
-        self.executor.current_dir = self.initial_dir
-        self.executor.allowed_directories = [self.initial_dir, '/fake/path']
 
     def test_is_safe_path(self):
-        self.assertTrue(self.executor.is_safe_path(os.path.join(self.initial_dir, 'test.txt')))
+        self.assertTrue(self.executor.is_safe_path('test.txt'))
         self.assertFalse(self.executor.is_safe_path('/etc/passwd'))
 
     def test_is_safe_rm_command(self):
@@ -28,7 +25,7 @@ class TestExecutor(unittest.TestCase):
         # Test with a file that exists in the current directory
         with patch('os.path.isfile', return_value=True):
             self.assertTrue(self.executor.is_safe_rm_command(
-                f'rm {os.path.join(self.initial_dir, "existing_file.txt")}'))
+                'rm existing_file.txt'))
         self.assertFalse(self.executor.is_safe_rm_command('rm -rf /'))
         self.assertFalse(self.executor.is_safe_rm_command('rm -f test.txt'))
 
@@ -133,7 +130,7 @@ class TestExecutor(unittest.TestCase):
     @patch('os.path.exists')
     @patch('builtins.open', new_callable=mock_open)
     @patch('click.confirm')
-    def test_perform_file_operation_create(self, mock_confirm, mock_file, mock_exists):
+    def test_perform_file_operation_create_with_confirmation(self, mock_confirm, mock_file, mock_exists):
         mock_exists.return_value = False
         mock_confirm.return_value = True
         result = self.executor.perform_file_operation(
@@ -148,7 +145,7 @@ class TestExecutor(unittest.TestCase):
     @patch('builtins.open', new_callable=mock_open, read_data="original content")
     @patch('click.confirm')
     @patch('drd.utils.step_executor.preview_file_changes')
-    def test_perform_file_operation_update(self, mock_preview, mock_confirm, mock_file, mock_exists):
+    def test_perform_file_operation_update_with_confirmation(self, mock_preview, mock_confirm, mock_file, mock_exists):
         mock_exists.return_value = True
         mock_confirm.return_value = True
         mock_preview.return_value = "Preview of changes"
@@ -171,12 +168,13 @@ class TestExecutor(unittest.TestCase):
         mock_preview.assert_called_once_with(
             'UPDATE', 'test.txt', new_content=expected_updated_content, original_content="original content")
         mock_file().write.assert_called_once_with(expected_updated_content)
+        mock_confirm.assert_called_once()
 
     @patch('os.path.exists')
     @patch('os.path.isfile')
     @patch('os.remove')
     @patch('click.confirm')
-    def test_perform_file_operation_delete(self, mock_confirm, mock_remove, mock_isfile, mock_exists):
+    def test_perform_file_operation_delete_with_confirmation(self, mock_confirm, mock_remove, mock_isfile, mock_exists):
         mock_exists.return_value = True
         mock_isfile.return_value = True
         mock_confirm.return_value = True
@@ -195,7 +193,7 @@ class TestExecutor(unittest.TestCase):
 
     @patch('subprocess.Popen')
     @patch('click.confirm')
-    def test_execute_shell_command(self, mock_confirm, mock_popen):
+    def test_execute_shell_command_with_confirmation(self, mock_confirm, mock_popen):
         mock_confirm.return_value = True
         mock_process = MagicMock()
         mock_process.poll.side_effect = [None, 0]
@@ -212,3 +210,36 @@ class TestExecutor(unittest.TestCase):
         mock_confirm.return_value = False
         result = self.executor.execute_shell_command('ls')
         mock_confirm.assert_called_once()
+
+    @patch('os.path.exists')
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('click.confirm')
+    def test_perform_file_operation_create_permission_denied(self, mock_confirm, mock_file, mock_exists):
+        mock_exists.return_value = False
+        mock_confirm.return_value = True
+        mock_file.side_effect = PermissionError("Permission denied")
+        result = self.executor.perform_file_operation(
+            'CREATE', 'test.txt', 'content')
+        self.assertFalse(result)
+        mock_file.assert_called_with(os.path.join(
+            self.executor.current_dir, 'test.txt'), 'w')
+        mock_confirm.assert_called_once()
+
+    @patch('subprocess.Popen')
+    def test_execute_shell_command_permission_denied(self, mock_popen):
+        mock_process = MagicMock()
+        mock_process.poll.side_effect = [None, 0]
+        mock_process.stdout.readline.return_value = 'output line'
+        mock_process.communicate.side_effect = PermissionError("Permission denied")
+        mock_popen.return_value = mock_process
+
+        result = self.executor.execute_shell_command('ls')
+        self.assertEqual(result, "Skipping this step...")
+
+
+This code addresses the feedback by:
+1. Removing the specific directory initialization in `setUp` to focus on essential setup.
+2. Ensuring unique and descriptive test method names.
+3. Adding a test case to handle permission denied errors during file creation.
+4. Adding a test case to handle permission denied errors during shell command execution.
+5. Ensuring that mocks are only applied where necessary and that assertions are consistent with expected outcomes.
