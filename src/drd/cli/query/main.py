@@ -9,6 +9,11 @@ from .file_operations import get_files_to_modify
 from ...utils.parser import parse_dravid_response
 
 
+def print_debug(message):
+    if click.get_current_context().params.get('debug'):
+        print(f"DEBUG: {message}")
+
+
 def execute_dravid_command(query, image_path, debug, instruction_prompt):
     print_info("Starting Dravid CLI tool..")
     print_warning("Please make sure you are in a fresh directory.")
@@ -66,8 +71,7 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt):
             xml_result = stream_dravid_api(
                 full_query, include_context=True, instruction_prompt=instruction_prompt, print_chunk=False)
             commands = parse_dravid_response(xml_result)
-            if debug:
-                print_info(f"Received {len(commands)} new command(s)")
+            print_debug(f"Received {len(commands)} new command(s)")
 
         if not commands:
             print_error("Failed to parse Claude's response or no commands to execute.")
@@ -80,7 +84,8 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt):
             commands, executor, metadata_manager, debug=debug)
 
         if not success:
-            print_error(f"Failed to execute command at step {step_completed}. Error message: {error_message}")
+            print_error(f"Failed to execute command at step {step_completed}.")
+            print_error(f"Error message: {error_message}")
             print_info("Attempting to fix the error...")
             if handle_error_with_dravid(Exception(error_message), commands[step_completed-1], executor, metadata_manager, debug=debug):
                 print_info("Fix applied successfully. Continuing with the remaining commands.")
