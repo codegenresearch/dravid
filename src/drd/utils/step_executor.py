@@ -15,7 +15,7 @@ class Executor:
     def __init__(self):
         self.current_dir = os.getcwd()
         self.initial_dir = self.current_dir
-        self.allowed_directories = [self.current_dir, '/fake/path/app']  # Added example path for testing
+        self.allowed_directories = [self.current_dir]  # Simplified allowed directories
         self.disallowed_commands = [
             'rmdir', 'del', 'format', 'mkfs',
             'dd', 'fsck', 'mkswap', 'mount', 'umount',
@@ -142,6 +142,7 @@ class Executor:
             return False
 
     def parse_json(self, json_string):
+        """Parse a JSON string and return the parsed JSON object."""
         try:
             return json.loads(json_string)
         except json.JSONDecodeError as e:
@@ -149,6 +150,7 @@ class Executor:
             return None
 
     def merge_json(self, existing_content, new_content):
+        """Merge two JSON strings and return the merged JSON string."""
         try:
             existing_json = json.loads(existing_content)
             new_json = json.loads(new_content)
@@ -159,10 +161,12 @@ class Executor:
             return None
 
     def get_folder_structure(self):
+        """Get the folder structure of the current directory, excluding ignored patterns."""
         ignore_patterns, _ = get_ignore_patterns(self.current_dir)
         return get_folder_structure(self.current_dir, ignore_patterns)
 
     def execute_shell_command(self, command, timeout=300):  # 5 minutes timeout
+        """Execute a shell command with confirmation and safety checks."""
         if not self.is_safe_command(command):
             print_warning(f"Please verify the command once: {command}")
 
@@ -185,6 +189,7 @@ class Executor:
             return self._execute_single_command(command, timeout)
 
     def _execute_single_command(self, command, timeout):
+        """Execute a single shell command with timeout and error handling."""
         try:
             process = subprocess.Popen(
                 command,
@@ -234,6 +239,7 @@ class Executor:
             raise Exception(error_message)
 
     def _handle_source_command(self, command):
+        """Handle the 'source' command to update the environment."""
         # Extract the file path from the source command
         _, file_path = command.split(None, 1)
         file_path = os.path.expandvars(os.path.expanduser(file_path))
@@ -268,6 +274,7 @@ class Executor:
             raise Exception(error_message)
 
     def _update_env_from_command(self, command):
+        """Update the environment based on the command."""
         if '=' in command:
             if command.startswith('export '):
                 # Handle export command
@@ -285,6 +292,7 @@ class Executor:
                 self.env[key.strip()] = value.strip().strip('"\'')
 
     def _handle_cd_command(self, command):
+        """Handle the 'cd' command to change the current directory."""
         _, path = command.split(None, 1)
         new_dir = os.path.abspath(os.path.join(self.current_dir, path))
         if self.is_safe_path(new_dir):
@@ -297,8 +305,8 @@ class Executor:
             return f"Failed to change directory to: {new_dir}"
 
     def reset_directory(self):
+        """Reset the current directory to the initial directory."""
         previous_dir = self.current_dir
-        print_info(f"Resetting directory from: {previous_dir} to: {self.initial_dir}")
         os.chdir(self.initial_dir)
         self.current_dir = self.initial_dir
-        print_info(f"Reset directory to: {self.current_dir}")
+        print_info(f"Reset directory from: {previous_dir} to: {self.current_dir}")
