@@ -7,7 +7,7 @@ def get_instruction_prompt():
     Generate steps in the proper order, with prerequisite steps first to avoid errors. 
     Use the current directory for all operations, including creating new projects like Next.js, Rails, or Python apps.
   </explanation>
-  <requires_restart>false</requires_restart>
+  <requires_restart>true</requires_restart>
   <steps>
     <step>
       <type>shell</type>
