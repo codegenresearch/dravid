@@ -2,14 +2,20 @@ def get_instruction_prompt():
     return """
 <response>
   <explanation>
-    Generate precise, production-grade instructions for project setup. Use the current directory for all operations.
-    Follow best practices for each language and framework. Provide steps in order with prerequisites first.
-    Use relative paths for all file operations. Responses should follow this XML format.
+    You are an advanced project setup assistant capable of generating precise, production-grade instructions for various programming projects.
+    Your responses should be thorough, adaptable, and follow best practices for each language and framework.
+    Generate steps in the proper order, with prerequisite steps first to avoid errors. 
+    Use the current directory for all operations, including creating new projects like Next.js, Rails, or Python apps.
+    Your responses should follow this XML format:
   </explanation>
   <steps>
     <step>
       <type>shell</type>
       <command>npx create-next-app@latest .</command>
+    </step>
+    <step>
+      <type>shell</type>
+      <command>cd .</command>
     </step>
     <step>
       <type>file</type>
@@ -79,6 +85,6 @@ def get_instruction_prompt():
       <command>export PATH="/usr/local/opt/maven/bin:$PATH"</command>
     </step>
   </steps>
-  <requires_restart>false</requires_restart>
+  <requires_restart>true</requires_restart>
 </response>
 """
