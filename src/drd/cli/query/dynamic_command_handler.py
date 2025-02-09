@@ -24,17 +24,14 @@ def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=F
                 print_info(f"Executing shell command: {cmd['command']}")
                 output = handle_shell_command(cmd, executor)
                 all_outputs.append(f"Step {i}/{total_steps}: Shell command - {cmd['command']}\nOutput: {output}")
-                print_success(f"Successfully executed: {cmd['command']}")
             elif cmd['type'] == 'file':
                 print_info(f"Performing file operation: {cmd['operation']} on {cmd['filename']}")
                 output = handle_file_operation(cmd, executor, metadata_manager)
                 all_outputs.append(f"Step {i}/{total_steps}: File operation - {cmd['operation']} - {cmd['filename']} - {output}")
-                print_success(f"Successfully performed {cmd['operation']} on file: {cmd['filename']}")
             elif cmd['type'] == 'metadata':
                 print_info(f"Performing metadata operation: {cmd['operation']}")
                 output = handle_metadata_operation(cmd, metadata_manager)
                 all_outputs.append(f"Step {i}/{total_steps}: Metadata operation - {cmd['operation']} - {output}")
-                print_success(f"Successfully performed metadata operation: {cmd['operation']}")
 
             if debug:
                 print_debug(f"Completed step {i}/{total_steps}")
@@ -53,6 +50,7 @@ def handle_shell_command(cmd, executor):
     output = executor.execute_shell_command(cmd['command'])
     if output is None:
         raise Exception(f"Command failed: {cmd['command']}")
+    print_success(f"Successfully executed: {cmd['command']}")
     if output:
         click.echo(f"Command output:\n{output}")
     return output
@@ -67,6 +65,7 @@ def handle_file_operation(cmd, executor, metadata_manager):
         force=True
     )
     if operation_performed:
+        print_success(f"Successfully performed {cmd['operation']} on file: {cmd['filename']}")
         if cmd['operation'] in ['CREATE', 'UPDATE']:
             update_file_metadata(cmd, metadata_manager, executor)
         return "Success"
