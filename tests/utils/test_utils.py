@@ -1,1 +1,1 @@
-import unittest\nfrom unittest.mock import patch\nfrom io import StringIO\nfrom colorama import Fore, Style, init\nfrom drd.utils.utils import (\
+import unittest\nimport os\nimport json\nfrom unittest.mock import patch, MagicMock\nfrom io import StringIO\nfrom colorama import Fore, Style, init\nfrom drd.utils.utils import (\
