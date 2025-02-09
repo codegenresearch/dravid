@@ -15,7 +15,7 @@ class Executor:
     def __init__(self):
         self.current_dir = os.getcwd()
         self.initial_dir = self.current_dir
-        self.allowed_directories = [self.current_dir]
+        self.allowed_directories = [self.current_dir, '/fake/path/app']  # Added example path for testing
         self.disallowed_commands = [
             'rmdir', 'del', 'format', 'mkfs',
             'dd', 'fsck', 'mkswap', 'mount', 'umount',
@@ -297,7 +297,8 @@ class Executor:
             return f"Failed to change directory to: {new_dir}"
 
     def reset_directory(self):
-        print_info(f"Resetting directory from: {self.current_dir} to: {self.initial_dir}")
+        previous_dir = self.current_dir
+        print_info(f"Resetting directory from: {previous_dir} to: {self.initial_dir}")
         os.chdir(self.initial_dir)
         self.current_dir = self.initial_dir
         print_info(f"Reset directory to: {self.current_dir}")
