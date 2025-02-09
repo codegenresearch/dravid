@@ -1,7 +1,7 @@
 import traceback
 import click
 from ...api.main import call_dravid_api
-from ...utils import print_error, print_success, print_info, print_step
+from ...utils import print_error, print_success, print_info, print_step, print_debug
 from ...metadata.common_utils import generate_file_description
 from ...prompts.error_resolution_prompt import get_error_resolution_prompt
 
@@ -37,7 +37,7 @@ def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=F
                 print_success(f"Successfully performed metadata operation: {cmd['operation']}")
 
             if debug:
-                print_info(f"Completed step {i}/{total_steps}")
+                print_debug(f"Completed step {i}/{total_steps}")
 
         except Exception as e:
             error_message = f"Step {i}/{total_steps}: Error executing {step_description}: {cmd}\nError details: {str(e)}"
@@ -49,6 +49,7 @@ def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=F
 
 
 def handle_shell_command(cmd, executor):
+    print_info(f"Executing shell command: {cmd['command']}")
     output = executor.execute_shell_command(cmd['command'])
     if output is None:
         raise Exception(f"Command failed: {cmd['command']}")
@@ -58,6 +59,7 @@ def handle_shell_command(cmd, executor):
 
 
 def handle_file_operation(cmd, executor, metadata_manager):
+    print_info(f"Performing file operation: {cmd['operation']} on {cmd['filename']}")
     operation_performed = executor.perform_file_operation(
         cmd['operation'],
         cmd['filename'],
@@ -75,6 +77,7 @@ def handle_file_operation(cmd, executor, metadata_manager):
 def handle_metadata_operation(cmd, metadata_manager):
     if cmd['operation'] == 'UPDATE_FILE':
         if metadata_manager.update_metadata_from_file(cmd['filename']):
+            print_success(f"Updated metadata for file: {cmd['filename']}")
             return f"Updated metadata for {cmd['filename']}"
         else:
             raise Exception(f"Failed to update metadata for file: {cmd['filename']}")
@@ -98,6 +101,7 @@ def update_file_metadata(cmd, metadata_manager, executor):
         description,
         exports
     )
+    print_success(f"Metadata updated for file: {cmd['filename']}")
 
 
 def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, previous_context="", debug=False):
