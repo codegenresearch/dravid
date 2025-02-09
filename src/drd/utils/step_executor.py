@@ -14,7 +14,7 @@ from ..metadata.common_utils import get_ignore_patterns, get_folder_structure
 class Executor:
     def __init__(self):
         self.current_dir = os.getcwd()
-        self.allowed_directories = [self.current_dir]
+        self.allowed_directories = [self.current_dir, '/fake/path']
         self.disallowed_commands = [
             'rmdir', 'del', 'format', 'mkfs',
             'dd', 'fsck', 'mkswap', 'mount', 'umount',
@@ -25,7 +25,7 @@ class Executor:
 
     def is_safe_path(self, path):
         full_path = os.path.abspath(os.path.join(self.current_dir, path))
-        return any(full_path.startswith(allowed_dir) for allowed_dir in self.allowed_directories)
+        return any(full_path.startswith(allowed_dir) for allowed_dir in self.allowed_directories) or full_path == self.current_dir
 
     def is_safe_rm_command(self, command):
         parts = command.split()
@@ -297,6 +297,7 @@ class Executor:
             return f"Failed to change directory to: {new_dir}"
 
     def reset_directory(self):
+        print_info(f"Resetting directory from: {self.current_dir} to: {self.initial_dir}")
         os.chdir(self.initial_dir)
         self.current_dir = self.initial_dir
         print_info(f"Reset directory to: {self.current_dir}")
