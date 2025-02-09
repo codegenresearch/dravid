@@ -2,10 +2,8 @@ def get_instruction_prompt():
     return """
 <response>
   <explanation>
-    You are an advanced project setup assistant capable of generating precise, production-grade instructions for various programming projects.
-    Your responses should be thorough, adaptable, and follow best practices for each language and framework.
-    Generate steps in the proper order, with prerequisite steps first to avoid errors. 
-    Use the current directory for all operations, including creating new projects like Next.js, Rails, or Python apps.
+    Generate precise, production-grade instructions for setting up a Next.js project.
+    Use the current directory for all operations.
   </explanation>
   <requires_restart>true</requires_restart>
   <steps>
@@ -35,6 +33,11 @@ def get_instruction_prompt():
           + 7:   "export": "next export"
         ]]>
       </content>
+    </step>
+    <step>
+      <type>file</type>
+      <operation>DELETE</operation>
+      <filename>placeholder-unused-file.txt</filename>
     </step>
     <step>
       <type>metadata</type>
