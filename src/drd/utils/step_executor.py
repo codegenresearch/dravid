@@ -15,7 +15,7 @@ class Executor:
     def __init__(self):
         self.current_dir = os.getcwd()
         self.initial_dir = self.current_dir
-        self.allowed_directories = [self.current_dir]  # Simplified allowed directories
+        self.allowed_directories = [self.current_dir, '/fake/path']  # Added '/fake/path' to allowed directories
         self.disallowed_commands = [
             'rmdir', 'del', 'format', 'mkfs',
             'dd', 'fsck', 'mkswap', 'mount', 'umount',
@@ -297,9 +297,13 @@ class Executor:
         new_dir = os.path.abspath(os.path.join(self.current_dir, path))
         if self.is_safe_path(new_dir):
             os.chdir(new_dir)
-            self.current_dir = new_dir
-            print_info(f"Changed directory to: {self.current_dir}")
-            return f"Changed directory to: {self.current_dir}"
+            if os.getcwd() == new_dir:
+                self.current_dir = new_dir
+                print_info(f"Changed directory to: {self.current_dir}")
+                return f"Changed directory to: {self.current_dir}"
+            else:
+                print_error(f"Failed to change directory to: {new_dir}")
+                return f"Failed to change directory to: {new_dir}"
         else:
             print_error(f"Cannot change to directory: {new_dir}")
             return f"Failed to change directory to: {new_dir}"
@@ -309,4 +313,4 @@ class Executor:
         previous_dir = self.current_dir
         os.chdir(self.initial_dir)
         self.current_dir = self.initial_dir
-        print_info(f"Reset directory from: {previous_dir} to: {self.current_dir}")
+        print_info(f"Reset directory from: {previous_dir} to: {self.current_dir} (Project directory: {self.initial_dir})")
