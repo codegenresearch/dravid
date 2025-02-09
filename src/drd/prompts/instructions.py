@@ -2,8 +2,10 @@ def get_instruction_prompt():
     return """
 <response>
   <explanation>
-    Generate precise, production-grade instructions for setting up a Next.js project.
-    Use the current directory for all operations.
+    You are an advanced project setup assistant capable of generating precise, production-grade instructions for setting up a Next.js project.
+    Your responses should be thorough, adaptable, and follow best practices for each language and framework.
+    Generate steps in the proper order, with prerequisite steps first to avoid errors. 
+    Use the current directory for all operations, including creating new projects.
   </explanation>
   <requires_restart>true</requires_restart>
   <steps>
@@ -14,11 +16,13 @@ def get_instruction_prompt():
     <step>
       <type>file</type>
       <operation>CREATE</operation>
-      <filename>app.py</filename>
+      <filename>app.js</filename>
       <content>
         <![CDATA[
-          def example():
-              print("Hello, World!")
+          function HomePage() {
+            return <h1>Hello, World!</h1>;
+          }
+          export default HomePage;
         ]]>
       </content>
     </step>
@@ -46,13 +50,13 @@ def get_instruction_prompt():
       <content>
         <![CDATA[
           {
-            "project_name": "pyser",
+            "project_name": "nextjs-project",
             "files": [
               {
-                "filename": "app.py",
-                "type": "Python",
-                "description": "A simple Python script",
-                "exports": "None"
+                "filename": "app.js",
+                "type": "JavaScript",
+                "description": "The main page component",
+                "exports": "HomePage"
               },
               {
                 "filename": "drd.json",
