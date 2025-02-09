@@ -20,7 +20,7 @@ def suggest_file_alternative(file_path, project_metadata):
     return response
 
 
-def handle_ask_command(ask, file):
+def handle_ask_command(ask, file, debug):
     context = ""
     metadata_manager = ProjectMetadataManager(os.getcwd())
     project_metadata = metadata_manager.get_project_context()
