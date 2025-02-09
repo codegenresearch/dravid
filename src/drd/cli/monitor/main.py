@@ -6,6 +6,12 @@ from ...utils import print_info
 
 
 def run_dev_server_with_monitoring(command: str):
+    """
+    Starts the development server with monitoring enabled.
+
+    Args:
+        command (str): The command to start the server.
+    """
     print_info("Starting server monitor...")
     error_handlers = {
         r"(?:Cannot find module|Module not found|ImportError|No module named)": handle_module_not_found,
@@ -27,6 +33,13 @@ def run_dev_server_with_monitoring(command: str):
 
 
 def handle_module_not_found(error_msg, monitor):
+    """
+    Handles module not found errors.
+
+    Args:
+        error_msg (str): The error message.
+        monitor (DevServerMonitor): The server monitor instance.
+    """
     match = re.search(
         r"(?:Cannot find module|Module not found|ImportError|No module named).*['\"](.*?)['\"]", error_msg, re.IGNORECASE)
     if match:
@@ -36,10 +49,24 @@ def handle_module_not_found(error_msg, monitor):
 
 
 def handle_syntax_error(error_msg, monitor):
+    """
+    Handles syntax errors.
+
+    Args:
+        error_msg (str): The error message.
+        monitor (DevServerMonitor): The server monitor instance.
+    """
     error = SyntaxError(f"Syntax error detected: {error_msg}")
     monitoring_handle_error_with_dravid(error, error_msg, monitor)
 
 
 def handle_general_error(error_msg, monitor):
+    """
+    Handles general errors.
+
+    Args:
+        error_msg (str): The error message.
+        monitor (DevServerMonitor): The server monitor instance.
+    """
     error = Exception(f"General error detected: {error_msg}")
     monitoring_handle_error_with_dravid(error, error_msg, monitor)
