@@ -15,7 +15,7 @@ class Executor:
     def __init__(self):
         self.current_dir = os.getcwd()
         self.initial_dir = self.current_dir
-        self.allowed_directories = [self.current_dir, '/fake/path']
+        self.allowed_directories = [self.current_dir]
         self.disallowed_commands = [
             'rmdir', 'del', 'format', 'mkfs',
             'dd', 'fsck', 'mkswap', 'mount', 'umount',
@@ -286,7 +286,7 @@ class Executor:
 
     def _handle_cd_command(self, command):
         _, path = command.split(None, 1)
-        new_dir = os.path.abspath(path)
+        new_dir = os.path.abspath(os.path.join(self.current_dir, path))
         if self.is_safe_path(new_dir):
             os.chdir(new_dir)
             self.current_dir = new_dir
