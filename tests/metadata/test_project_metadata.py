@@ -33,9 +33,13 @@ class TestProjectMetadataManager(unittest.TestCase):
 
     @patch.object(ProjectMetadataManager, 'save_metadata')
     def test_update_file_metadata(self, mock_save):
-        self.manager.update_file_metadata("test.py", "python", "print('Hello')", "A test Python file")
+        self.manager.update_file_metadata(
+            "test.py", "python", "print('Hello')", "A test Python file"
+        )
         mock_save.assert_called_once()
-        file_entry = next((f for f in self.manager.metadata['files'] if f['filename'] == "test.py"), None)
+        file_entry = next(
+            (f for f in self.manager.metadata['files'] if f['filename'] == "test.py"), None
+        )
         self.assertIsNotNone(file_entry)
         self.assertEqual(file_entry['type'], "python")
         self.assertEqual(file_entry['content_preview'], "print('Hello')")
@@ -84,7 +88,9 @@ class TestProjectMetadataManager(unittest.TestCase):
         mock_exists.return_value = True
         result = self.manager.update_metadata_from_file()
         self.assertTrue(result)
-        mock_update.assert_called_once_with("test.py", "py", 'print("Hello, World!")')
+        mock_update.assert_called_once_with(
+            "test.py", "py", 'print("Hello, World!")'
+        )
 
     @patch('os.path.exists')
     @patch('builtins.open', new_callable=mock_open)
@@ -141,16 +147,26 @@ class TestProjectMetadataManager(unittest.TestCase):
         # Assert that the metadata has been updated correctly
         self.assertEqual(self.manager.metadata['project_name'], "pyserv")
         self.assertEqual(len(self.manager.metadata['files']), 2)
-        self.assertEqual(self.manager.metadata['dev_server']['start_command'], "uvicorn app:app --reload")
+        self.assertEqual(
+            self.manager.metadata['dev_server']['start_command'], "uvicorn app:app --reload"
+        )
         self.assertEqual(self.manager.metadata['dev_server']['framework'], "flask")
         self.assertEqual(self.manager.metadata['dev_server']['language'], "python")
 
         # Check file metadata
-        app_py = next(f for f in self.manager.metadata['files'] if f['filename'] == 'app.py')
+        app_py = next(
+            f for f in self.manager.metadata['files'] if f['filename'] == 'app.py'
+        )
         self.assertEqual(app_py['description'], "Main application file")
         self.assertEqual(app_py['exports'], "app")
         self.assertTrue(app_py['content_preview'].startswith("from flask import Flask"))
 
-        requirements_txt = next(f for f in self.manager.metadata['files'] if f['filename'] == 'requirements.txt')
-        self.assertEqual(requirements_txt['description'], "Project dependencies")
-        self.assertTrue(requirements_txt['content_preview'].startswith("Flask==2.3.2"))
+        requirements_txt = next(
+            f for f in self.manager.metadata['files'] if f['filename'] == 'requirements.txt'
+        )
+        self.assertEqual(
+            requirements_txt['description'], "Project dependencies"
+        )
+        self.assertTrue(
+            requirements_txt['content_preview'].startswith("Flask==2.3.2")
+        )
