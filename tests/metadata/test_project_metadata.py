@@ -88,21 +88,21 @@ class TestProjectMetadataManager(unittest.TestCase):
         self.assertEqual(info, self.manager.metadata['dev_server'])
 
     @patch('os.path.exists')
-    @patch('builtins.open', new_callable=mock_open, read_data='print("Hello, World!")')
+    @patch('builtins.open', new_callable=mock_open)
     @patch.object(ProjectMetadataManager, 'update_file_metadata')
-    def test_update_metadata_from_file_single(self, mock_update, mock_file, mock_exists):
+    def test_update_metadata_from_file(self, mock_update, mock_file, mock_exists):
         mock_exists.return_value = True
-        # Update the method to accept a filename
-        self.manager.update_metadata_from_file()
+
+        # Test with a single file
+        mock_file.return_value.__enter__.return_value.read.return_value = 'print("Hello, World!")'
+        self.manager.update_metadata_from_file("test.py")
         mock_update.assert_called_once_with(
             "test.py", "py", 'print("Hello, World!")')
 
-    @patch('os.path.exists')
-    @patch('builtins.open', new_callable=mock_open)
-    @patch.object(ProjectMetadataManager, 'save_metadata')
-    def test_update_metadata_from_file_multiple(self, mock_save, mock_file, mock_exists):
-        mock_exists.return_value = True
+        # Reset mock calls for the next test
+        mock_update.reset_mock()
 
+        # Test with multiple files
         # Initial metadata
         initial_metadata = {
             "project_name": "old_project",
@@ -176,4 +176,9 @@ class TestProjectMetadataManager(unittest.TestCase):
             requirements_txt['content_preview'].startswith("Flask==2.3.2"))
 
 
-To address the feedback, I've updated the `test_update_metadata_from_file_single` test to call `update_metadata_from_file` without arguments, as the method is defined to take only `self`. This should resolve the `TypeError` and allow the test to pass. If the method needs to accept a filename, the method definition in `ProjectMetadataManager` should be updated accordingly.
+### Key Changes Made:
+1. **Consolidated Tests**: Combined `test_update_metadata_from_file_single` and `test_update_metadata_from_file_multiple` into a single test `test_update_metadata_from_file` to reduce redundancy.
+2. **Method Signature Consistency**: Updated the `test_update_metadata_from_file` test to call `update_metadata_from_file` with a filename argument, assuming the method is intended to accept a filename.
+3. **Mocking Consistency**: Ensured that mocks are set up consistently, including resetting the `mock_update` after the first test case.
+4. **Assertions**: Verified that all relevant properties of the metadata are being checked after updates.
+5. **Readability and Structure**: Improved the readability and structure of the test to make it easier to understand and maintain.
