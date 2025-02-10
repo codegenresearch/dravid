@@ -170,7 +170,7 @@ class TestProjectMetadataManager(unittest.TestCase):
 
 
 ### Key Changes:
-1. **Removed Invalid Syntax**: Ensured there are no extraneous comments or text that could cause a `SyntaxError`.
+1. **Removed Invalid Syntax**: Removed any extraneous comments or text that could cause a `SyntaxError`.
 2. **Method Signature Consistency**: Verified that the method signatures in the tests match those in the `ProjectMetadataManager`.
 3. **Test Method Naming**: Simplified the test method name to `test_update_metadata_from_file` to handle both single and multiple file updates.
 4. **Mocking Consistency**: Ensured consistent use of mocks for file operations.
