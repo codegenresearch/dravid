@@ -6,7 +6,7 @@ from .utils import (
     print_debug,
     print_warning,
     print_header,
-    print_prompt,
+    print_prompt
 )
 from .loader import Loader, run_with_loader
 
@@ -20,5 +20,5 @@ __all__ = [
     'Loader',
     'run_with_loader',
     'print_header',
-    'print_prompt',
+    'print_prompt'
 ]
