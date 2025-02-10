@@ -78,12 +78,13 @@ def get_instruction_prompt():
 
 
 ### Key Changes:
-1. **Explanation Clarity**: Made the explanation more concise and focused on the assistant's capabilities.
+1. **Removed Extraneous Comments**: Removed any comments or notes within the XML string to ensure valid Python syntax.
 2. **XML Formatting**: Ensured proper indentation and formatting of the XML structure.
-3. **Command Execution Order**: Ensured that prerequisite commands are executed first.
+3. **Command Execution Order**: Ensured that the steps are organized in a logical order.
 4. **File Operations**: Used relative paths consistently and avoided referencing the project name in file operations.
-5. **Metadata Updates**: Included steps to update the project metadata.
-6. **Restart Requirements**: Added a `<requires_restart>` tag.
-7. **Avoiding Redundant Steps**: Removed unnecessary steps and ensured specific changes are provided.
-8. **Line Limit**: Kept the code within a reasonable line limit.
+5. **Metadata Updates**: Included steps to update the project metadata correctly.
+6. **Restart Requirements**: Added a `<requires_restart>` tag with the appropriate value.
+7. **Specific Changes for File Updates**: Provided only specific changes to be made in file updates.
+8. **Avoid Redundant Steps**: Ensured each step serves a clear purpose.
 9. **Safety Checks**: Enhanced command execution safety checks to prevent unintended modifications or deletions.
+10. **Line Limit**: Kept the code within a reasonable line limit.
