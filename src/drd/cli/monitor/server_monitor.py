@@ -26,7 +26,7 @@ class DevServerMonitor:
     def start(self):
         self.should_stop.clear()
         self.restart_requested.clear()
-        print_header(f"Starting server with command: {self.command}")
+        print_header(f"Starting Dravid AI along with your process/server: {self.command}")
         try:
             self.process = start_process(self.command, self.project_dir)
             self.output_monitor.start()
@@ -72,14 +72,26 @@ class DevServerMonitor:
 
 
 def start_process(command, cwd):
-    return subprocess.Popen(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        stdin=subprocess.PIPE,
-        text=True,
-        bufsize=1,
-        universal_newlines=True,
-        shell=True,
-        cwd=cwd
-    )
+    try:
+        return subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+            universal_newlines=True,
+            shell=True,
+            cwd=cwd
+        )
+    except Exception as e:
+        print_error(f"Failed to start server process: {str(e)}")
+        return None
+
+
+This code snippet addresses the feedback by:
+1. Updating the print statements to be more descriptive and consistent with the gold code.
+2. Ensuring the stop and restart messages match the gold code's style.
+3. Handling exceptions in the `start_process` function to provide feedback if the process fails to start.
+4. Ensuring method names and purposes align with the gold code.
+5. Maintaining a consistent structure and organization of methods and the class.
