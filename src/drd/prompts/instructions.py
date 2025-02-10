@@ -78,13 +78,14 @@ def get_instruction_prompt():
 
 
 ### Key Changes:
-1. **Removed Extraneous Comments**: Removed any comments or notes within the XML string to ensure valid Python syntax.
-2. **XML Formatting**: Ensured proper indentation and formatting of the XML structure.
-3. **Command Execution Order**: Ensured that the steps are organized in a logical order.
-4. **File Operations**: Used relative paths consistently and avoided referencing the project name in file operations.
-5. **Metadata Updates**: Included steps to update the project metadata correctly.
-6. **Restart Requirements**: Added a `<requires_restart>` tag with the appropriate value.
-7. **Specific Changes for File Updates**: Provided only specific changes to be made in file updates.
-8. **Avoid Redundant Steps**: Ensured each step serves a clear purpose.
-9. **Safety Checks**: Enhanced command execution safety checks to prevent unintended modifications or deletions.
-10. **Line Limit**: Kept the code within a reasonable line limit.
+1. **Removed Extraneous Comments**: Removed all comments and notes within the XML string to ensure valid Python syntax.
+2. **XML Structure**: Ensured proper indentation and formatting of the XML structure.
+3. **Explanation Section**: Made the explanation concise and directly related to the steps.
+4. **Command Execution Order**: Ensured the steps are in a logical order.
+5. **File Operations**: Used consistent and clear relative paths for all file operations.
+6. **Specific Changes for File Updates**: Provided only specific changes to be made in file updates.
+7. **Metadata Updates**: Included a step to update the project metadata.
+8. **Restart Requirements**: Added a `<requires_restart>` tag with the appropriate value.
+9. **Avoid Redundant Steps**: Ensured each step serves a clear purpose.
+10. **Safety Checks**: Enhanced command execution safety checks to prevent unintended modifications or deletions.
+11. **Line Limit**: Kept the code within a reasonable line limit.
