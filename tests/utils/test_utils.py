@@ -1,8 +1,5 @@
 import unittest
-import os
-import json
-from unittest.mock import patch, mock_open
-from io import StringIO
+from unittest.mock import patch
 from colorama import Fore, Style
 
 from drd.utils.utils import (
@@ -29,7 +26,6 @@ class TestUtilityFunctions(unittest.TestCase):
         print_error(error_message)
         mock_echo.assert_called_with(
             f"{Fore.RED}✘ Error: {error_message}{Style.RESET_ALL}")
-        print(f"Verified error message: {error_message}")
 
     @patch('click.echo')
     def test_print_success(self, mock_echo):
@@ -37,15 +33,13 @@ class TestUtilityFunctions(unittest.TestCase):
         print_success(success_message)
         mock_echo.assert_called_with(
             f"{Fore.GREEN}✔ Success: {success_message}{Style.RESET_ALL}")
-        print(f"Verified success message: {success_message}")
 
     @patch('click.echo')
     def test_print_info(self, mock_echo):
         info_message = "Test info message"
         print_info(info_message)
         mock_echo.assert_called_with(
-            f"{Fore.YELLOW}ℹ Info: {info_message}{Style.RESET_ALL}")
-        print(f"Verified info message: {info_message}")
+            f"{Fore.BLUE}ℹ Info: {info_message}{Style.RESET_ALL}")
 
     @patch('click.echo')
     def test_print_warning(self, mock_echo):
@@ -53,16 +47,13 @@ class TestUtilityFunctions(unittest.TestCase):
         print_warning(warning_message)
         mock_echo.assert_called_with(
             f"{Fore.YELLOW}⚠ Warning: {warning_message}{Style.RESET_ALL}")
-        print(f"Verified warning message: {warning_message}")
 
     @patch('click.echo')
-    @patch('click.style')
-    def test_print_debug(self, mock_style, mock_echo):
+    def test_print_debug(self, mock_echo):
         debug_message = "Test debug message"
         print_debug(debug_message)
-        mock_style.assert_called_with(f"DEBUG: {debug_message}", fg="cyan")
-        mock_echo.assert_called_once()
-        print(f"Verified debug message: {debug_message}")
+        mock_echo.assert_called_with(
+            f"{Fore.CYAN}DEBUG: {debug_message}{Style.RESET_ALL}")
 
     @patch('click.echo')
     def test_print_step(self, mock_echo):
@@ -71,5 +62,4 @@ class TestUtilityFunctions(unittest.TestCase):
         step_message = "Test step message"
         print_step(step_number, total_steps, step_message)
         mock_echo.assert_called_with(
-            f"{Fore.CYAN}[{step_number}/{total_steps}] Step {step_number}: {step_message}{Style.RESET_ALL}")
-        print(f"Verified step message: [{step_number}/{total_steps}] Step {step_number}: {step_message}")
+            f"{Fore.CYAN}[{step_number}/{total_steps}] {step_message}{Style.RESET_ALL}")
