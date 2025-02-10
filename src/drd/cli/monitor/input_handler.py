@@ -117,8 +117,9 @@ class InputHandler:
 
 
 ### Key Changes:
-1. **Order of Operations**: Ensured `get_instruction_prompt()` is called before regex matching.
-2. **Code Structure**: Streamlined the handling of `image_path` and `instructions`.
-3. **Error Handling**: Added error handling for the general input processing.
-4. **Comments and Readability**: Improved comments for clarity.
-5. **Consistency in Method Calls**: Ensured consistent method calls and variable usage.
+1. **Removed Incorrect Comment**: Removed the line that started with `1. **Order of Operations**:` to fix the `SyntaxError`.
+2. **Order of Operations**: Ensured `get_instruction_prompt()` is called before regex matching.
+3. **Code Structure**: Streamlined the handling of `image_path` and `instructions`.
+4. **Error Handling**: Added error handling for the general input processing.
+5. **Comments and Readability**: Improved comments for clarity.
+6. **Consistency in Method Calls**: Ensured consistent method calls and variable usage.
