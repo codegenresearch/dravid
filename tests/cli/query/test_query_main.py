@@ -56,7 +56,7 @@ class TestExecuteDravidCommand(unittest.TestCase):
                                self.debug, self.instruction_prompt)
 
         mock_print_debug.assert_has_calls([
-            call("Received 2 new command(s)")
+            call("Received 2 new command(s) 📝")
         ])
 
     @patch('drd.cli.query.main.Executor')
@@ -95,10 +95,10 @@ class TestExecuteDravidCommand(unittest.TestCase):
                                self.debug, self.instruction_prompt)
 
         mock_print_error.assert_any_call(
-            "Failed to execute command at step 1.")
+            "Failed to execute command at step 1. ❌")
         mock_handle_error.assert_called_once()
         mock_print_info.assert_any_call(
-            "Fix applied successfully. Continuing with the remaining commands.", indent=2)
+            "Fix applied successfully. Continuing with the remaining commands. ✅")
 
     @patch('drd.cli.query.main.Executor')
     @patch('drd.cli.query.main.ProjectMetadataManager')
@@ -107,7 +107,7 @@ class TestExecuteDravidCommand(unittest.TestCase):
     @patch('drd.cli.query.main.print_info')
     @patch('drd.cli.query.main.print_warning')
     @patch('drd.cli.query.main.run_with_loader')
-    @patch('drd.cli.query.main.get_files_to_modify')  # Add this line
+    @patch('drd.cli.query.main.get_files_to_modify')
     def test_execute_dravid_command_with_image(self, mock_get_files, mock_run_with_loader,
                                                mock_print_warning, mock_print_info,
                                                mock_execute_commands, mock_call_vision_api,
@@ -121,14 +121,13 @@ class TestExecuteDravidCommand(unittest.TestCase):
         mock_execute_commands.return_value = (
             True, 1, None, "Image command executed successfully")
         mock_run_with_loader.side_effect = lambda f, *args, **kwargs: f()
-        mock_get_files.return_value = []  # Add this line
+        mock_get_files.return_value = []
 
         execute_dravid_command(self.query, self.image_path,
                                self.debug, self.instruction_prompt)
 
         mock_call_vision_api.assert_called_once()
-        mock_print_info.assert_any_call(
-            f"Processing image: {self.image_path}", indent=4)
+        mock_print_info.assert_any_call(f"Processing image: {self.image_path} 🖼️")
 
     @patch('drd.cli.query.main.Executor')
     @patch('drd.cli.query.main.ProjectMetadataManager')
@@ -148,7 +147,7 @@ class TestExecuteDravidCommand(unittest.TestCase):
                                self.debug, self.instruction_prompt)
 
         mock_print_error.assert_called_with(
-            "An unexpected error occurred: API connection error")
+            "An unexpected error occurred: API connection error 🔗")
 
 
 if __name__ == '__main__':
