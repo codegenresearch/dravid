@@ -116,3 +116,5 @@ def update_metadata_with_dravid(meta_description, current_dir):
 4. **Print Statements**: Reviewed and ensured that print statements match the phrasing and structure of those in the gold code.
 5. **Error Handling**: Ensured that error handling is consistent with the gold code.
 6. **Code Structure**: Adjusted the overall structure of the code within the loop to match the gold code more closely.
+
+This should address the feedback and ensure that the code aligns more closely with the gold standard.
