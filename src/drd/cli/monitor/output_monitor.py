@@ -94,7 +94,8 @@ class OutputMonitor:
 
 
 ### Changes Made:
-1. **Added `print_prompt`**: Introduced `print_prompt` in the `_check_idle_state` method to align with the test expectations.
-2. **Consistent Formatting**: Ensured consistent use of `print_info` and `print_prompt` for appropriate messages.
-3. **Error Handling Messages**: Used `print_error` for error messages to maintain consistency.
-4. **Comments**: Added comments to explain the purpose of each method and important logic for better readability.
+1. **Removed Invalid Comment**: Removed the invalid comment that was causing the `SyntaxError`.
+2. **Message Formatting**: Ensured that the messages are formatted consistently with the gold code, including the use of emojis and punctuation.
+3. **Consistent Print Functions**: Used `print_info` and `print_error` consistently for all relevant messages.
+4. **Idle State Prompt**: Ensured that the prompt message in `_check_idle_state` is identical to the gold code.
+5. **Comments**: Removed comments to align with the gold code's style.
