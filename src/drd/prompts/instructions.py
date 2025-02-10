@@ -90,9 +90,8 @@ def get_instruction_prompt():
 5. **Shell Commands**: Separated shell commands into distinct steps for clarity and ensured they are executed in the correct order.
 6. **File Operations**: Provided only the necessary changes for file creation and updates.
 7. **Restart Requirement**: Included the `<requires_restart>` tag with the appropriate value.
-8. **General Guidelines**: Reviewed and adhered to the specific guidelines provided in the gold code, especially regarding project initialization, file operations, and command execution.
-9. **Avoiding Destructive Commands**: Ensured no destructive commands are included.
-10. **Shell Command Execution**: Avoided combining shell commands with `&&`.
+8. **Avoiding Destructive Commands**: Ensured no destructive commands are included.
+9. **General Guidelines**: Reviewed and adhered to the specific guidelines provided in the gold code, especially regarding project initialization, file operations, and command execution.
 
 ### Specific Changes to Address Test Case Feedback:
 
