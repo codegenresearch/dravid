@@ -286,7 +286,7 @@ class Executor:
 
     def _handle_cd_command(self, command):
         _, path = command.split(None, 1)
-        new_dir = os.path.abspath(path)
+        new_dir = os.path.abspath(os.path.join(self.current_dir, path))
         if self.is_safe_path(new_dir):
             os.chdir(new_dir)
             self.current_dir = new_dir
@@ -304,8 +304,8 @@ class Executor:
 
 This code addresses the feedback by:
 1. Ensuring `initial_dir` is set before `disallowed_commands`.
-2. Simplifying the path handling in `is_safe_path`.
-3. Ensuring logging consistency in `reset_directory`.
+2. Using `os.path.join` in `_handle_cd_command` to construct the new directory path.
+3. Ensuring logging consistency in `reset_directory` by including the project directory in the reset message.
 4. Reviewing error handling for specificity and style.
 5. Ensuring comments are clear and consistent.
-6. Reviewing method structure for logical flow and additional checks.
+6. Reviewing method structure for logical flow and necessary checks.
