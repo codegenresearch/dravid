@@ -79,7 +79,6 @@ def handle_file_operation(cmd, executor, metadata_manager):
         print_success(
             f"Successfully performed {cmd['operation']} on file: {cmd['filename']}")
         update_file_metadata(cmd, metadata_manager, executor)
-        handle_dependencies(cmd, metadata_manager)
         return "Success"
     else:
         raise Exception(
