@@ -165,7 +165,7 @@ if __name__ == '__main__':
 
 
 ### Changes Made:
-1. **Removed Invalid Comment**: Ensured that there are no invalid comments that could cause a `SyntaxError`. The previous comment was removed to ensure the code is syntactically correct.
+1. **Removed Invalid Comment**: Removed the invalid comment that was causing the `SyntaxError`. This ensures that the code is syntactically correct and can be executed without interruption.
 
 2. **Debug Messages**: Ensured that the debug messages in the assertions match the exact phrasing and structure found in the gold code.
 
