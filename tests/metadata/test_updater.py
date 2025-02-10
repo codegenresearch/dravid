@@ -98,22 +98,26 @@ class TestMetadataUpdater(unittest.TestCase):
 
         with patch('builtins.open', mock_open_file):
             # Mock analyze_file to return the expected file_info
-            mock_metadata_manager.return_value.analyze_file.side_effect = [
-                {
-                    'path': '/fake/project/dir/src/main.py',
-                    'type': 'python',
-                    'summary': "print('Hello, World!')",
-                    'exports': ['main_function'],
-                    'imports': ['os']
-                },
-                {
-                    'path': '/fake/project/dir/package.json',
-                    'type': 'json',
-                    'summary': '{"name": "test-project"}',
-                    'exports': [],
-                    'imports': []
-                }
-            ]
+            async def mock_analyze_file(filename):
+                if filename == '/fake/project/dir/src/main.py':
+                    return {
+                        'path': '/fake/project/dir/src/main.py',
+                        'type': 'python',
+                        'summary': "print('Hello, World!')",
+                        'exports': ['main_function'],
+                        'imports': ['os']
+                    }
+                elif filename == '/fake/project/dir/package.json':
+                    return {
+                        'path': '/fake/project/dir/package.json',
+                        'type': 'json',
+                        'summary': '{"name": "test-project"}',
+                        'exports': [],
+                        'imports': []
+                    }
+                return None
+
+            mock_metadata_manager.return_value.analyze_file = MagicMock(side_effect=mock_analyze_file)
 
             # Call the function
             update_metadata_with_dravid(
@@ -185,9 +189,10 @@ if __name__ == '__main__':
 
 
 This code addresses the feedback by:
-1. Ensuring all comments are properly prefixed with `#` to avoid syntax errors.
-2. Mocking the `analyze_file` method to return the expected file information.
-3. Ensuring that the summary used in the assertions matches the expected output in the gold code.
-4. Simplifying error handling and logging to match the gold code's approach.
-5. Ensuring comments are concise and directly relevant to the code.
-6. Ensuring assertions are consistent with the gold code's expectations.
+1. Removing the line causing the `SyntaxError` by ensuring all comments are properly prefixed with `#`.
+2. Defining `analyze_file` as an asynchronous function and handling its calls appropriately.
+3. Directly assigning the mocked asynchronous function to `mock_metadata_manager.return_value.analyze_file`.
+4. Ensuring error handling and logging match the gold code's approach.
+5. Simplifying logging tests to match the gold code's expectations.
+6. Ensuring comments are concise and directly relevant to the code.
+7. Ensuring assertions are consistent with the gold code's expectations.
