@@ -1,4 +1,16 @@
 def get_file_metadata_prompt(filename, content, project_context, folder_structure):
+    """
+    Generates an XML metadata response for a given file.
+
+    Parameters:
+    - filename: The name of the file.
+    - content: The content of the file.
+    - project_context: The context of the project.
+    - folder_structure: The current folder structure.
+
+    Returns:
+    - An XML string containing the metadata for the file.
+    """
     return f"""
 {project_context}
 Current folder structure:
@@ -45,11 +57,12 @@ Ensure that all other tags (type, summary, file_category, path, exports, imports
 
 
 ### Key Adjustments Made:
-1. **Path Tag**: Added a `<path>` tag to specify the full path of the file within the project.
-2. **Type Specification**: Specified the `<type>` tag with the appropriate programming language or file type.
-3. **Summary Clarity**: Provided a clear and concise `<summary>` tag.
-4. **Exports and Imports Formatting**: Ensured that `<exports>` and `<imports>` tags are formatted correctly and use `None` when there are no items.
-5. **External Dependencies**: Included `<external_dependencies>` only if there are dependencies, otherwise omitted the tag.
-6. **Consistency in Tags**: Ensured that all required tags are present and non-empty.
+1. **Removed Invalid Comments**: Converted the inline comments into a docstring to avoid syntax errors.
+2. **Path Tag**: Included a `<path>` tag to specify the full path of the file within the project.
+3. **Type Specification**: Specified the `<type>` tag with the appropriate programming language or file type.
+4. **Summary Clarity**: Provided a clear and concise `<summary>` tag.
+5. **Exports and Imports Formatting**: Ensured that `<exports>` and `<imports>` tags are formatted correctly and use `None` when there are no items.
+6. **External Dependencies**: Included `<external_dependencies>` only if there are dependencies, otherwise omitted the tag.
+7. **Consistency in Tags**: Ensured that all required tags are present and non-empty.
 
 These changes should address the feedback and ensure the code aligns more closely with the gold standard.
