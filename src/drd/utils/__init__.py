@@ -17,8 +17,8 @@ __all__ = [
     'print_step',
     'print_debug',
     'print_warning',
-    'print_header',
-    'print_prompt',
     'Loader',
     'run_with_loader',
+    'print_header',
+    'print_prompt',
 ]
