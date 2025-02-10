@@ -1,6 +1,5 @@
 def get_file_metadata_prompt(filename, content, project_context, folder_structure):
-    try:
-        return f"""
+    return f"""
 {project_context}
 Current folder structure:
 {folder_structure}
@@ -19,7 +18,7 @@ You are the project context maintainer. Your role is to generate comprehensive a
 6. **Imports**: List all imports from other project files. Use the format `path/to/file:importedName`. If there are no imports, use `None`.
 7. **External Dependencies**: List all external dependencies if the file is a dependency management file (e.g., package.json, requirements.txt, Cargo.toml). Use the format `name@version`. Omit this section if there are no external dependencies.
 
-Based on the file content, project context, and the current folder structure, please provide detailed metadata for this file.
+Ensure that all tags (type, summary, file_category, path, exports, imports) are always present and non-empty. If there are no exports, use `None` instead of an empty tag. If there are no imports, use `None` instead of an empty tag. If there are no external dependencies, omit the <external_dependencies> tag entirely.
 
 Respond with an XML structure containing the metadata:
 
@@ -34,8 +33,6 @@ Respond with an XML structure containing the metadata:
     {'<external_dependencies>' + ''.join(f'<dependency>{dep}</dependency>' for dep in ['name1@version1', 'name2@version2']) + '</external_dependencies>' if ['name1@version1', 'name2@version2'] else ''}
   </metadata>
 </response>
-
-Ensure that all tags (type, summary, file_category, path, exports, imports) are always present and non-empty. If there are no exports, use `None` instead of an empty tag. If there are no imports, use `None` instead of an empty tag. If there are no external dependencies, omit the <external_dependencies> tag entirely.
 
 ### Examples:
 - **Code File Example**:
@@ -64,13 +61,5 @@ Ensure that all tags (type, summary, file_category, path, exports, imports) are 
       <dependency>pandas@1.3.3</dependency>
     </external_dependencies>
   </metadata>
-</response>
-"""
-    except Exception as e:
-        return f"""
-<response>
-  <error>
-    <message>Error generating metadata prompt: {str(e)}</message>
-  </error>
 </response>
 """
