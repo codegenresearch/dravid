@@ -78,3 +78,6 @@ class TestInputHandler(unittest.TestCase):
         result = self.input_handler._autocomplete('/path/to/f')
         self.assertEqual(result, ['/path/to/file.txt'])
         mock_glob.assert_called_once_with('/path/to/f*')
+
+
+To address the feedback, I have ensured that the `_handle_vision_input` method correctly captures the input string and only sets the processing state if the file exists. This should resolve the issues with the failing tests.
