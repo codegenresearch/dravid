@@ -28,7 +28,7 @@ class ProjectMetadataManager:
 
         new_metadata = {
             "project_info": {
-                "name":  os.path.basename(self.project_dir),
+                "name": os.path.basename(self.project_dir),
                 "version": "1.0.0",
                 "description": "",
                 "last_updated": datetime.now().isoformat()
@@ -133,8 +133,8 @@ class ProjectMetadataManager:
 
         if self.is_binary_file(file_path):
             return {
-                "path": rel_path,
-                "type": "binary",
+                "file_path": rel_path,
+                "file_type": "binary",
                 "summary": "Binary or non-text file",
                 "exports": [],
                 "imports": []
@@ -153,12 +153,12 @@ class ProjectMetadataManager:
                 prompt, include_context=True)
 
             root = ET.fromstring(response)
-            metadata = root.find('metadata')
+            metadata = root.find('file_metadata')
 
             file_info = {
-                "path": rel_path,
-                "type": metadata.find('type').text,
-                "summary": metadata.find('summary').text,
+                "file_path": rel_path,
+                "file_type": metadata.find('type').text,
+                "summary": metadata.find('description').text,
                 "exports": metadata.find('exports').text.split(',') if metadata.find('exports').text != 'None' else [],
                 "imports": metadata.find('imports').text.split(',') if metadata.find('imports').text != 'None' else []
             }
@@ -171,8 +171,8 @@ class ProjectMetadataManager:
         except Exception as e:
             print_warning(f"Error analyzing file {file_path}: {str(e)}")
             file_info = {
-                "path": rel_path,
-                "type": "unknown",
+                "file_path": rel_path,
+                "file_type": "unknown",
                 "summary": "Error occurred during analysis",
                 "exports": [],
                 "imports": []
@@ -198,11 +198,11 @@ class ProjectMetadataManager:
                     loader.message = f"Analyzing files ({processed_files}/{total_files})"
 
         # Determine languages
-        all_languages = set(file['type'] for file in self.metadata['key_files']
-                            if file['type'] not in ['binary', 'unknown'])
+        all_languages = set(file['file_type'] for file in self.metadata['key_files']
+                            if file['file_type'] not in ['binary', 'unknown'])
         if all_languages:
             self.metadata['environment']['primary_language'] = max(all_languages, key=lambda x: sum(
-                1 for file in self.metadata['key_files'] if file['type'] == x))
+                1 for file in self.metadata['key_files'] if file['file_type'] == x))
             self.metadata['environment']['other_languages'] = list(
                 all_languages - {self.metadata['environment']['primary_language']})
 
@@ -213,11 +213,11 @@ class ProjectMetadataManager:
     def remove_file_metadata(self, filename):
         self.metadata['project_info']['last_updated'] = datetime.now().isoformat()
         self.metadata['key_files'] = [
-            f for f in self.metadata['key_files'] if f['path'] != filename]
+            f for f in self.metadata['key_files'] if f['file_path'] != filename]
         self.save_metadata()
 
     def get_file_metadata(self, filename):
-        return next((f for f in self.metadata['key_files'] if f['path'] == filename), None)
+        return next((f for f in self.metadata['key_files'] if f['file_path'] == filename), None)
 
     def get_project_context(self):
         return json.dumps(self.metadata, indent=2)
@@ -239,46 +239,14 @@ class ProjectMetadataManager:
     def update_file_metadata(self, filename, file_type, content, description=None, exports=None, imports=None):
         self.metadata['project_info']['last_updated'] = datetime.now().isoformat()
         file_entry = next(
-            (f for f in self.metadata['key_files'] if f['path'] == filename), None)
+            (f for f in self.metadata['key_files'] if f['file_path'] == filename), None)
         if file_entry is None:
-            file_entry = {'path': filename}
+            file_entry = {'file_path': filename}
             self.metadata['key_files'].append(file_entry)
         file_entry.update({
-            'type': file_type,
+            'file_type': file_type,
             'summary': description or file_entry.get('summary', ''),
             'exports': exports or [],
             'imports': imports or []
         })
         self.save_metadata()
-
-    def update_metadata_from_file(self):
-        if os.path.exists(self.metadata_file):
-            with open(self.metadata_file, 'r') as f:
-                content = f.read()
-            try:
-                new_metadata = json.loads(content)
-                # Update dev server info if present
-                if 'dev_server' in new_metadata:
-                    self.metadata['dev_server'] = new_metadata['dev_server']
-                # Update other metadata fields
-                for key, value in new_metadata.items():
-                    if key != 'files':  # We'll handle files separately
-                        self.metadata[key] = value
-                # Update file metadata
-                if 'files' in new_metadata:
-                    for file_entry in new_metadata['files']:
-                        filename = file_entry['filename']
-                        file_type = file_entry.get(
-                            'type', filename.split('.')[-1])
-                        file_content = file_entry.get('content', '')
-                        description = file_entry.get('description', '')
-                        exports = file_entry.get('exports', [])
-                        imports = file_entry.get('imports', [])
-                        self.update_file_metadata(
-                            filename, file_type, file_content, description, exports, imports)
-                self.save_metadata()
-                return True
-            except json.JSONDecodeError:
-                print(f"Error: Invalid JSON content in {self.metadata_file}")
-                return False
-        return False
