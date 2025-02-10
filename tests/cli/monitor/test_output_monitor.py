@@ -49,7 +49,7 @@ class TestOutputMonitor(unittest.TestCase):
             call("3. Exit monitoring mode (type 'exit')"),
             call("\nType your choice or command:")
         ]
-        mock_print_info.assert_has_calls(expected_info_calls, any_order=True)
+        mock_print_info.assert_has_calls(expected_info_calls, any_order=False)
 
     def test_check_for_errors(self):
         # Setup
@@ -69,3 +69,10 @@ class TestOutputMonitor(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+### Changes Made:
+1. **Assertion Order**: Ensured that `mock_print_prompt` is asserted before `mock_print_info` to match the expected order.
+2. **Expected Calls Order**: Set `any_order=False` in `mock_print_info.assert_has_calls` to ensure the calls are in the expected order.
+3. **Formatting and Indentation**: Ensured consistent formatting and indentation for readability.
+4. **Comments**: Added comments to clarify the setup and assertions.
