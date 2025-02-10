@@ -23,25 +23,24 @@ class TestMetadataUpdater(unittest.TestCase):
             'package.json': 'file'
         }
 
-    @patch('drd.metadata.updater.ProjectMetadataManager')
-    @patch('drd.metadata.updater.get_ignore_patterns')
-    @patch('drd.metadata.updater.get_folder_structure')
-    @patch('drd.metadata.updater.call_dravid_api_with_pagination')
-    @patch('drd.metadata.updater.extract_and_parse_xml')
-    @patch('drd.metadata.updater.find_file_with_dravid')
-    @patch('drd.metadata.updater.print_info')
-    @patch('drd.metadata.updater.print_success')
-    @patch('drd.metadata.updater.print_warning')
     @patch('drd.metadata.updater.print_error')
-    def test_update_metadata_with_dravid(self, mock_print_error, mock_print_warning,
-                                         mock_print_success, mock_print_info,
-                                         mock_find_file, mock_extract_xml, mock_call_api,
-                                         mock_get_folder_structure, mock_get_ignore_patterns,
-                                         mock_metadata_manager):
+    @patch('drd.metadata.updater.print_warning')
+    @patch('drd.metadata.updater.print_success')
+    @patch('drd.metadata.updater.print_info')
+    @patch('drd.metadata.updater.find_file_with_dravid')
+    @patch('drd.metadata.updater.extract_and_parse_xml')
+    @patch('drd.metadata.updater.call_dravid_api_with_pagination')
+    @patch('drd.metadata.updater.get_folder_structure')
+    @patch('drd.metadata.updater.get_ignore_patterns')
+    @patch('drd.metadata.updater.ProjectMetadataManager')
+    def test_update_metadata_with_dravid(self, mock_metadata_manager,
+                                         mock_get_ignore_patterns, mock_get_folder_structure,
+                                         mock_call_api, mock_extract_xml, mock_find_file,
+                                         mock_print_info, mock_print_success, mock_print_warning,
+                                         mock_print_error):
         # Set up mocks
-        mock_metadata_manager_instance = MagicMock()
-        mock_metadata_manager.return_value = mock_metadata_manager_instance
-        mock_metadata_manager.return_value.get_project_context.return_value = self.project_context
+        mock_metadata_manager_instance = mock_metadata_manager.return_value
+        mock_metadata_manager_instance.get_project_context.return_value = self.project_context
         mock_get_ignore_patterns.return_value = (
             [], "No ignore patterns found")
         mock_get_folder_structure.return_value = self.folder_structure
