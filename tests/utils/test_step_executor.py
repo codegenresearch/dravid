@@ -169,6 +169,6 @@ class TestExecutor(unittest.TestCase):
 5. **Assertions**: Double-checked assertions to ensure they are consistent with those in the gold code.
 6. **Redundant Tests**: Removed redundant tests to streamline the test suite.
 7. **Parameterization**: Considered parameterized tests where applicable, though no specific parameterization was needed in this case.
-8. **Documentation and Comments**: Ensured that comments are clear and do not interfere with the code syntax. Comments should enhance understanding without being overly verbose.
+8. **Documentation and Comments**: Ensured that comments are clear and concise, enhancing understanding without being overly verbose. Comments should not interfere with the code syntax.
 
 This should address the feedback and ensure the tests run without syntax errors.
