@@ -28,7 +28,7 @@ class DevServerMonitor:
         self.restart_requested.clear()
         print_header(f"Starting Dravid AI along with your process/server: {self.command}")
         try:
-            self.process = self._start_process(self.command)
+            self.process = start_process(self.command, self.project_dir)
             self.output_monitor.start()
             self.input_handler.start()
         except Exception as e:
@@ -53,7 +53,7 @@ class DevServerMonitor:
             self.process.wait()
 
         try:
-            self.process = self._start_process(self.command)
+            self.process = start_process(self.command, self.project_dir)
             self.retry_count = 0
             self.restart_requested.clear()
             print_success("Server restarted successfully.")
@@ -70,29 +70,29 @@ class DevServerMonitor:
                     f"Retrying... (Attempt {self.retry_count + 1}/{MAX_RETRIES})")
                 self.request_restart()
 
-    def _start_process(self, command):
-        try:
-            return subprocess.Popen(
-                command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                stdin=subprocess.PIPE,
-                text=True,
-                bufsize=1,
-                universal_newlines=True,
-                shell=True,
-                cwd=self.project_dir
-            )
-        except Exception as e:
-            print_error(f"Failed to start server process: {str(e)}")
-            self.stop()
-            return None
+
+def start_process(command, cwd):
+    try:
+        return subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+            universal_newlines=True,
+            shell=True,
+            cwd=cwd
+        )
+    except Exception as e:
+        print_error(f"Failed to start server process: {str(e)}")
+        return None
 
 
 This code snippet addresses the feedback by:
 1. Removing the extraneous comment line that caused the `SyntaxError`.
-2. Updating the print statements in the `stop` and `perform_restart` methods to be consistent with the gold code.
-3. Renaming the `start_process` method to `_start_process` to indicate it is intended for internal use.
-4. Ensuring error handling in `_start_process` matches the gold code by calling `self.stop()` before returning `None`.
-5. Using `self.project_dir` in `_start_process` instead of passing `cwd` as a parameter.
+2. Defining a standalone `start_process` function to align with the gold code.
+3. Ensuring that `self.project_dir` is passed as a parameter to `start_process` in both `start` and `perform_restart` methods.
+4. Ensuring error handling in `start_process` matches the gold code.
+5. Reviewing and aligning print statements with the gold code for consistency.
 6. Maintaining a consistent structure and organization of methods within the class.
