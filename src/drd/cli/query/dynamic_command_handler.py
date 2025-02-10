@@ -46,6 +46,7 @@ def handle_shell_command(cmd, executor):
     print_info(f"Executing shell command: {cmd['command']}")
     output = executor.execute_shell_command(cmd['command'])
     if output is None:
+        print_error(f"Command failed: {cmd['command']}")
         raise Exception(f"Command failed: {cmd['command']}")
     print_success(f"Successfully executed: {cmd['command']}")
     if output:
@@ -99,6 +100,7 @@ def update_file_metadata(cmd, metadata_manager, executor):
         description,
         exports
     )
+    print_debug(f"Updated metadata for {cmd['filename']} with type: {file_type}, description: {description}, exports: {exports}")
 
 
 def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, previous_context="", debug=False):
