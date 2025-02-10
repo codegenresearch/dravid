@@ -25,7 +25,7 @@ class Executor:
 
     def is_safe_path(self, path):
         full_path = os.path.abspath(os.path.join(self.current_dir, path))
-        return any(full_path.startswith(allowed_dir) for allowed_dir in self.allowed_directories)
+        return full_path == self.current_dir or any(full_path.startswith(allowed_dir) for allowed_dir in self.allowed_directories)
 
     def is_safe_rm_command(self, command):
         parts = command.split()
@@ -306,7 +306,7 @@ This revised code addresses the feedback by:
 1. Removing the invalid comment that caused the `SyntaxError`.
 2. Ensuring the `initial_dir` is set before defining the `disallowed_commands` list.
 3. Including additional relevant paths in the `allowed_directories` list.
-4. Ensuring the `is_safe_path` method correctly checks against the allowed directories.
+4. Ensuring the `is_safe_path` method checks if the full path is equal to the current directory in addition to checking against the allowed directories.
 5. Reviewing and ensuring consistency in error messages and confirmation prompts.
 6. Including a message in the `reset_directory` method indicating the project directory from which it is resetting.
 7. Ensuring comments are clear and consistent throughout the code.
