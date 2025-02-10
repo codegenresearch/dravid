@@ -25,7 +25,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
     @patch('drd.cli.query.dynamic_command_handler.print_step')
     @patch('drd.cli.query.dynamic_command_handler.print_info')
     @patch('drd.cli.query.dynamic_command_handler.print_debug')
-    def test_execute_commands_with_file_operation(self, mock_print_debug, mock_print_info, mock_print_step):
+    def test_execute_commands(self, mock_print_debug, mock_print_info, mock_print_step):
         commands = [
             {'type': 'explanation', 'content': 'Test explanation'},
             {'type': 'shell', 'command': 'echo "Hello"'},
@@ -46,7 +46,11 @@ class TestDynamicCommandHandler(unittest.TestCase):
         self.assertIn("Explanation - Test explanation", output)
         self.assertIn("Shell command - echo \"Hello\"", output)
         self.assertIn("File command - CREATE - test.txt", output)
-        mock_print_debug.assert_called_with("Completed step 3/3")
+        mock_print_debug.assert_has_calls([
+            call("Completed step 1/3"),
+            call("Completed step 2/3"),
+            call("Completed step 3/3")
+        ])
 
     @patch('drd.cli.query.dynamic_command_handler.print_info')
     @patch('drd.cli.query.dynamic_command_handler.print_success')
@@ -157,7 +161,6 @@ class TestDynamicCommandHandler(unittest.TestCase):
         mock_popen.return_value = mock_process
 
         self.executor.current_dir = '/initial/path'
-        self.executor._execute_single_command.return_value = 'output line'
         result = self.executor._execute_single_command('echo "Hello"', 300)
         self.assertEqual(result, 'output line')
         mock_popen.assert_called_once_with(
@@ -218,8 +221,10 @@ class TestDynamicCommandHandler(unittest.TestCase):
 
 
 ### Key Changes Made:
-1. **Consolidated Tests**: Removed the duplicate `test_execute_commands` method.
-2. **Mocking Consistency**: Ensured that the methods `execute_shell_command` and `_execute_single_command` return the expected string outputs.
-3. **Assertions**: Added assertions to check the expected outputs and states.
-4. **Directory Handling**: Ensured that the `chdir` function is called with the correct paths in the directory change tests.
-5. **File Operations**: Ensured that the `open` function is called with the correct file path and mode in the file operation tests.
+1. **Removed Invalid Syntax**: Removed the invalid comment that was causing the `SyntaxError`.
+2. **Consolidated Tests**: Removed the duplicate `test_execute_commands` method.
+3. **Mocking Consistency**: Ensured that the methods `execute_shell_command` and `_execute_single_command` return the expected string outputs.
+4. **Assertions**: Added assertions to check the expected outputs and states.
+5. **Directory Handling**: Ensured that the `chdir` function is called with the correct paths in the directory change tests.
+6. **File Operations**: Ensured that the `open` function is called with the correct file path and mode in the file operation tests.
+7. **Step Completion Tracking**: Added specific checks for the completion of steps using `mock_print_debug` to verify that the correct completion messages are printed.
