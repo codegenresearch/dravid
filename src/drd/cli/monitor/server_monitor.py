@@ -26,9 +26,9 @@ class DevServerMonitor:
     def start(self):
         self.should_stop.clear()
         self.restart_requested.clear()
-        print_header(f"Starting server with command: {self.command}")
+        print_header(f"Starting Dravid AI along with your process/server: {self.command}")
         try:
-            self.process = start_process(self.command, self.project_dir)
+            self.process = self._start_process(self.command)
             if self.process:
                 self.output_monitor.start()
                 self.input_handler.start()
@@ -40,12 +40,12 @@ class DevServerMonitor:
             self.stop()
 
     def stop(self):
-        print_header("Stopping server monitor...")
+        print_info("Stopping server monitor...")
         self.should_stop.set()
         if self.process:
             self.process.terminate()
             self.process.wait()
-        print_success("Server monitor stopped.")
+        print_prompt("Server monitor stopped.")
 
     def request_restart(self):
         self.restart_requested.set()
@@ -57,7 +57,7 @@ class DevServerMonitor:
             self.process.wait()
 
         try:
-            self.process = start_process(self.command, self.project_dir)
+            self.process = self._start_process(self.command)
             if self.process:
                 self.retry_count = 0
                 self.restart_requested.clear()
@@ -80,21 +80,21 @@ class DevServerMonitor:
                 f"Restart attempt {self.retry_count} of {MAX_RETRIES} failed. Retrying...")
             self.request_restart()
 
-
-def start_process(command, cwd):
-    try:
-        print_info(f"Starting process with command: {command} in directory: {cwd}")
-        return subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            stdin=subprocess.PIPE,
-            text=True,
-            bufsize=1,
-            universal_newlines=True,
-            shell=True,
-            cwd=cwd
-        )
-    except Exception as e:
-        print_error(f"Failed to start the process: {str(e)}")
-        return None
+    def _start_process(self, command):
+        try:
+            print_info(f"Starting process with command: {command} in directory: {self.project_dir}")
+            return subprocess.Popen(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                stdin=subprocess.PIPE,
+                text=True,
+                bufsize=1,
+                universal_newlines=True,
+                shell=True,
+                cwd=self.project_dir
+            )
+        except Exception as e:
+            print_error(f"Failed to start the process: {str(e)}")
+            self.stop()
+            return None
