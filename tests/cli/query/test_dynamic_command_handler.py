@@ -96,7 +96,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
         update_file_metadata(cmd, self.metadata_manager, self.executor)
 
         self.metadata_manager.get_project_context.assert_called_once()
-        self.executor.get_folder_structure.assert_called_once()
+        self.executor.get_folder_structure.assert_called_called_once()
         mock_generate_description.assert_called_once_with(
             'test.txt', 'Test content', self.metadata_manager.get_project_context(), self.executor.get_folder_structure())
         self.metadata_manager.update_file_metadata.assert_called_once_with(
