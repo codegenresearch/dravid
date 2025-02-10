@@ -30,11 +30,8 @@ class OutputMonitor:
 
     def _monitor_output(self):
         error_buffer = []
-        iteration = 0
         self.last_output_time = time.time()
         while not self.monitor.should_stop.is_set():
-            iteration += 1
-
             if self.monitor.process.poll() is not None and not self.monitor.processing_input.is_set():
                 if not self.monitor.restart_requested.is_set():
                     print_error("Server process ended unexpectedly.")
