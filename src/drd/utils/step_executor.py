@@ -213,7 +213,7 @@ class Executor:
                     print(line.strip())
                     output.append(line)
 
-                time.sleep(0.1)
+                time.sleep(00.1)
 
             stdout, stderr = process.communicate()
             output.append(stdout)
@@ -286,7 +286,7 @@ class Executor:
 
     def _handle_cd_command(self, command):
         _, path = command.split(None, 1)
-        new_dir = os.path.abspath(path)
+        new_dir = os.path.abspath(os.path.join(self.current_dir, path))
         if self.is_safe_path(new_dir):
             os.chdir(new_dir)
             self.current_dir = new_dir
@@ -305,7 +305,7 @@ class Executor:
 This revised code addresses the feedback by:
 1. Removing the invalid comment that caused the `SyntaxError`.
 2. Ensuring the `initial_dir` is set before the `disallowed_commands` list.
-3. Simplifying the `is_safe_path` method to directly use `os.path.abspath(path)`.
+3. Using `os.path.join` in the `_handle_cd_command` method to construct the new directory path.
 4. Reviewing and ensuring consistency in error messages and confirmation prompts.
 5. Including a message in the `reset_directory` method indicating the project directory from which it is resetting.
 6. Ensuring comments are clear and consistent throughout the code.
