@@ -29,9 +29,13 @@ class TestRateLimitHandler(unittest.IsolatedAsyncioTestCase):
             await limiter.acquire()
             current_time = time.time()
             acquire_times.append(current_time - start_time)
+            logger.debug(f"Acquire {i+1} at {current_time - start_time:.4f} seconds")
 
         end_time = time.time()
         total_time = end_time - start_time
+
+        logger.debug(f"Total time: {total_time:.4f} seconds")
+        logger.debug(f"Acquire times: {acquire_times}")
 
         # Check that the first 3 calls were almost instantaneous
         self.assertLess(acquire_times[2] - acquire_times[0], 0.1)
@@ -45,13 +49,13 @@ class TestRateLimitHandler(unittest.IsolatedAsyncioTestCase):
     @patch('drd.metadata.rate_limit_handler.call_dravid_api_with_pagination')
     @patch('drd.metadata.rate_limit_handler.extract_and_parse_xml')
     async def test_process_single_file(self, mock_extract_xml, mock_call_api):
-        mock_call_api.return_value = "<response><type>python</type><summary>A test file</summary><exports>test_function</exports><imports>os</imports></response>"
+        mock_call_api.return_value = "<response><type>python</type><summary>A test file</summary><exports>test_function</exports><imports>os,sys</imports></response>"
         mock_root = ET.fromstring(mock_call_api.return_value)
         mock_extract_xml.return_value = mock_root
 
         result = await process_single_file("test.py", "print('Hello')", "Test project", {"test.py": "file"})
 
-        self.assertEqual(result, ("test.py", "python", "A test file", "test_function", "os"))
+        self.assertEqual(result, ("test.py", "python", "A test file", "test_function", "os,sys"))
         mock_call_api.assert_called_once()
         mock_extract_xml.assert_called_once_with(mock_call_api.return_value)
 
