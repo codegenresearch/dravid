@@ -32,7 +32,7 @@ def monitoring_handle_error_with_dravid(error, line, monitor):
         content = get_file_content(file)
         if content:
             file_contents[file] = content
-            print_info(f"Read content of {file}")
+            print_info(f"  - Read content of {file}")
 
     file_context = "\n".join(
         [f"Content of {file}:\n{content}" for file, content in file_contents.items()]
@@ -61,7 +61,7 @@ def monitoring_handle_error_with_dravid(error, line, monitor):
     print_command_details(fix_commands)
 
     user_input = monitor.get_user_input(
-        "Do you want to proceed with this fix? [y/N]: "
+        "Do you want to proceed with this fix? You can stop at any time during the process. [y/N]: "
     )
 
     if user_input.lower() == 'y':
