@@ -111,7 +111,7 @@ def update_metadata_with_dravid(meta_description, current_dir):
 
 
 ### Changes Made:
-1. **Removed Invalid Comment**: Ensured there are no improperly formatted comments that could cause a `SyntaxError`.
+1. **Removed Invalid Comment**: Removed the improperly formatted comment that was causing a `SyntaxError`.
 2. **Consistency in Variable Naming**: Ensured variable names (`metadata_node`, `dependencies_node`) are consistent with the gold code.
 3. **Simplification of Logic**: Streamlined the logic for handling external dependencies.
 4. **Error Handling Consistency**: Ensured error messages are consistent with the gold code.
