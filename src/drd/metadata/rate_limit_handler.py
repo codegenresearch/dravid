@@ -64,7 +64,7 @@ async def process_single_file(filename, content, project_context, folder_structu
         return filename, file_type, summary, exports, imports
     except Exception as e:
         print_error(f"Error processing {filename}: {str(e)}")
-        return filename, "unknown", f"Error: {str(e)}", "", ""  # Ensure imports is an empty string on error
+        return filename, "unknown", "Error: " + str(e), "", ""  # Simplified error message formatting
 
 
 async def process_files(files, project_context, folder_structure):
