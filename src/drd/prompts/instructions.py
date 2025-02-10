@@ -1,15 +1,12 @@
-def get_instruction_prompt(project_dir):
-    return f"""
+def get_instruction_prompt():
+    return """
 <response>
   <explanation>A brief explanation of the steps, if necessary</explanation>
+  <requires_restart>false</requires_restart>
   <steps>
     <step>
       <type>shell</type>
-      <command>npx create-next-app@latest {project_dir}</command>
-    </step>
-    <step>
-      <type>shell</type>
-      <command>cd {project_dir}</command>
+      <command>npx create-next-app@latest .</command>
     </step>
     <step>
       <type>file</type>
@@ -18,7 +15,7 @@ def get_instruction_prompt(project_dir):
       <content>
         <![CDATA[
           def example():
-           re...
+              pass
         ]]>
       </content>
     </step>
@@ -29,27 +26,58 @@ def get_instruction_prompt(project_dir):
       <content>
         <![CDATA[
           {
-  "project_name": "pyser",
-  "files": [
-    {
-      "filename": "app.py",
-      "type": "Python",
-      "description": "...",
-      "exports": "None"
-    },
-    {
-      "filename": "drd.json",
-      "type": "json",
-      "description": "",
-      "exports": "None"
-    }
-  ],
-  "dev_server": {
-    "start_command": "python start",
-    "framework": "flask",
-    "language": "python"
-  }
-}
+            "project_name": "pyser",
+            "files": [
+              {
+                "filename": "app.py",
+                "type": "Python",
+                "description": "...",
+                "exports": "None"
+              },
+              {
+                "filename": "drd.json",
+                "type": "json",
+                "description": "",
+                "exports": "None"
+              }
+            ],
+            "dev_server": {
+              "start_command": "python start",
+              "framework": "flask",
+              "language": "python"
+            }
+          }
+        ]]>
+      </content>
+    </step>
+    <step>
+      <type>metadata</type>
+      <operation>UPDATE_FILE</operation>
+      <filename>drd.json</filename>
+      <content>
+        <![CDATA[
+          {
+            "project_name": "pyser",
+            "files": [
+              {
+                "filename": "app.py",
+                "type": "Python",
+                "description": "...",
+                "exports": "None"
+              },
+              {
+                "filename": "drd.json",
+                "type": "json",
+                "description": "",
+                "exports": "None"
+              }
+            ],
+            "dev_server": {
+              "start_command": "python start",
+              "framework": "flask",
+              "language": "python"
+            }
+          }
         ]]>
       </content>
     </step>
