@@ -7,12 +7,12 @@ File: {filename}
 Content:
 {content}
 
-You are the project context maintainer. Your role is to generate comprehensive and clear metadata for the project files to assist AI coding assistants in future tasks.
+You're the project context maintainer. Your role is to generate comprehensive and clear metadata for the project files to assist AI coding assistants in future tasks.
 
 ### Guidelines:
-1. **Summary**: Provide a brief summary of the file's main purpose.
-2. **File Category**: Specify whether the file is a `code_file` or `dependency_file`.
-3. **Type**: Specify the programming language or file type explicitly.
+1. **Type**: Specify the programming language or file type explicitly.
+2. **Summary**: Provide a brief summary of the file's main purpose.
+3. **File Category**: Specify whether the file is a `code_file` or `dependency_file`.
 4. **Path**: Include the full path of the file within the project.
 5. **Exports**: List all exports (functions, classes, or variables available for importing). Use the format `fun:functionName,class:ClassName,var:variableName`. If there are no exports, use `None`.
 6. **Imports**: List all imports from other project files. Use the format `path/to/file:importedName`. If there are no imports, use `None`.
