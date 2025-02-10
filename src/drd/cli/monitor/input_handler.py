@@ -32,8 +32,8 @@ class InputHandler:
             return
 
         if user_input:
+            self.monitor.processing_input.set()
             try:
-                self.monitor.processing_input.set()
                 self._handle_general_input(user_input)
             finally:
                 self.monitor.processing_input.clear()
@@ -42,17 +42,17 @@ class InputHandler:
         print_info(
             "Enter the image path and instructions (use Tab for autocomplete):")
         user_input = self._get_input_with_autocomplete()
+        self.monitor.processing_input.set()
         try:
-            self.monitor.processing_input.set()
             self._handle_general_input(user_input)
         finally:
             self.monitor.processing_input.clear()
 
     def _handle_general_input(self, user_input):
+        instruction_prompt = get_instruction_prompt()  # Call once and store
         # Regex to extract image path and instructions
         image_pattern = r"([a-zA-Z0-9._/-]+(?:/|\\)?)+\.(jpg|jpeg|png|bmp|gif)"
         match = re.search(image_pattern, user_input)
-        instruction_prompt = get_instruction_prompt()  # Call once and store
 
         if match:
             image_path = match.group(0)
