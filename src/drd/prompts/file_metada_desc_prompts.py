@@ -25,8 +25,9 @@ Respond with an XML structure containing the metadata:
 <response>
   <metadata>
     <type>file_type</type>
-    <description>Description based on the file's contents, project context, and folder structure</description>
+    <summary>Description based on the file's contents, project context, and folder structure</summary>
     <file_category>code_file or dependency_file</file_category>
+    <path>{filename}</path>
     <exports>fun:functionName,class:ClassName,var:variableName</exports>
     <imports>path/to/file:importedName</imports>
     <external_dependencies>
@@ -37,20 +38,21 @@ Respond with an XML structure containing the metadata:
 </response>
 
 Respond strictly only with the XML response as it will be used for parsing, no other extra words. 
-If there are no exports, use <exports>None</exports> instead of an empty tag.
-If there are no imports, use <imports>None</imports> instead of an empty tag.
+If there are no exports, use <exports></exports> instead of an empty tag.
+If there are no imports, use <imports></imports> instead of an empty tag.
 If there are no external dependencies, omit the <external_dependencies> tag entirely.
-Ensure that all other tags (type, description, file_category, exports, imports) are always present and non-empty.
+Ensure that all other tags (type, summary, file_category, path, exports, imports) are always present and non-empty.
 """
     except Exception as e:
         return f"""
 <response>
   <metadata>
     <type>error</type>
-    <description>Error generating metadata: {str(e)}</description>
+    <summary>Error generating metadata: {str(e)}</summary>
     <file_category>error</file_category>
-    <exports>None</exports>
-    <imports>None</imports>
+    <path>{filename}</path>
+    <exports></exports>
+    <imports></imports>
   </metadata>
 </response>
 """
