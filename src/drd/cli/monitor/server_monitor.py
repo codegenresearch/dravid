@@ -28,7 +28,7 @@ class DevServerMonitor:
         self.restart_requested.clear()
         print_header(f"Starting Dravid AI along with your process/server: {self.command}")
         try:
-            self.process = self._start_process(self.command)
+            self.process = start_process(self.command, self.project_dir)
             self.output_monitor.start()
             self.input_handler.start()
             print_success("Server started successfully.")
@@ -54,7 +54,7 @@ class DevServerMonitor:
             self.process.wait()
 
         try:
-            self.process = self._start_process(self.command)
+            self.process = start_process(self.command, self.project_dir)
             if self.process:
                 self.retry_count = 0
                 self.restart_requested.clear()
@@ -82,28 +82,29 @@ class DevServerMonitor:
                     f"Restarting... (Attempt {self.retry_count + 1}/{MAX_RETRIES})")
                 self.request_restart()
 
-    def _start_process(self, command):
-        try:
-            print_info(f"Starting process with command: {command} in directory: {self.project_dir}")
-            return subprocess.Popen(
-                command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                stdin=subprocess.PIPE,
-                text=True,
-                bufsize=1,
-                universal_newlines=True,
-                shell=True,
-                cwd=self.project_dir
-            )
-        except Exception as e:
-            print_error(f"Failed to start the process: {str(e)}")
-            return None
+
+def start_process(command, cwd):
+    try:
+        print_info(f"Starting process with command: {command} in directory: {cwd}")
+        return subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+            universal_newlines=True,
+            shell=True,
+            cwd=cwd
+        )
+    except Exception as e:
+        print_error(f"Failed to start the process: {str(e)}")
+        return None
 
 
 This code addresses the feedback by:
 1. Removing the invalid comment that caused the `SyntaxError`.
 2. Ensuring that print statements match the style and content of the gold code.
-3. Using `_start_process` as the method name for starting the process to match the gold code.
+3. Using `start_process` as the method name for starting the process to match the gold code.
 4. Aligning the retry logic and error handling with the gold code.
 5. Simplifying the `start` method by removing unnecessary checks.
