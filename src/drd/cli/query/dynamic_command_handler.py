@@ -2,8 +2,9 @@ import traceback
 import click
 from ...api.main import call_dravid_api
 from ...utils import print_error, print_success, print_info, print_step, print_debug
-from ...metadata.common_utils import generate_file_description
+from ...metadata.common_utils import generate_file_description, update_project_metadata, update_dev_server_info
 from ...prompts.error_resolution_prompt import get_error_resolution_prompt
+from xml.etree import ElementTree as ET
 
 
 def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=False):
@@ -27,6 +28,8 @@ def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=F
                     output = handle_metadata_operation(cmd, metadata_manager)
                 elif cmd['type'] == 'requires_restart':
                     output = 'requires restart if the server is running'
+                elif cmd['type'] == 'dependencies':
+                    output = handle_dependencies(cmd, metadata_manager)
                 else:
                     raise ValueError(f"Unknown command type: {cmd['type']}")
 
@@ -75,6 +78,7 @@ def handle_file_operation(cmd, executor, metadata_manager):
     elif operation_performed:
         print_success(
             f"Successfully performed {cmd['operation']} on file: {cmd['filename']}")
+        update_file_metadata(cmd, metadata_manager, executor)
         return "Success"
     else:
         raise Exception(
@@ -91,6 +95,24 @@ def handle_metadata_operation(cmd, metadata_manager):
                 f"Failed to update metadata for file: {cmd['filename']}")
     else:
         raise Exception(f"Unknown operation: {cmd['operation']}")
+
+
+def handle_dependencies(cmd, metadata_manager):
+    if 'dependencies' in cmd:
+        for dependency in cmd['dependencies']:
+            if 'type' in dependency and 'content' in dependency:
+                if dependency['type'] == 'project':
+                    update_project_metadata(dependency['content'], metadata_manager)
+                elif dependency['type'] == 'dev_server':
+                    update_dev_server_info(dependency['content'], metadata_manager)
+                else:
+                    raise Exception(f"Unknown dependency type: {dependency['type']}")
+                print_success(f"Updated {dependency['type']} with content: {dependency['content']}")
+                return f"Updated {dependency['type']}"
+            else:
+                raise Exception("Dependency missing 'type' or 'content'")
+    else:
+        raise Exception("Dependencies command missing 'dependencies' key")
 
 
 def update_file_metadata(cmd, metadata_manager, executor):
@@ -135,6 +157,7 @@ def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, pr
     try:
         fix_commands = call_dravid_api(
             error_query, include_context=True)
+        fix_commands = parse_fix_commands(fix_commands)
     except ValueError as e:
         print_error(f"Error parsing dravid's response: {str(e)}")
         return False
@@ -164,3 +187,43 @@ def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, pr
             all_outputs,
             debug
         )
+
+
+def parse_fix_commands(fix_commands):
+    try:
+        root = ET.fromstring(fix_commands)
+        commands = []
+        for step in root.findall('steps/step'):
+            command_type = step.find('type').text
+            command_content = step.find('command').text if step.find('command') is not None else None
+            operation = step.find('operation').text if step.find('operation') is not None else None
+            filename = step.find('filename').text if step.find('filename') is not None else None
+            content = step.find('content').text if step.find('content') is not None else None
+            dependencies = step.find('dependencies')
+            dependencies_list = []
+            if dependencies is not None:
+                for dependency in dependencies.findall('dependency'):
+                    dependency_type = dependency.find('type').text
+                    dependency_content = dependency.find('content').text
+                    dependencies_list.append({'type': dependency_type, 'content': dependency_content})
+
+            command = {
+                'type': command_type,
+                'command': command_content,
+                'operation': operation,
+                'filename': filename,
+                'content': content,
+                'dependencies': dependencies_list if dependencies_list else None
+            }
+            commands.append(command)
+        return commands
+    except ET.ParseError as e:
+        raise ValueError(f"Error parsing XML: {str(e)}")
+
+
+This code addresses the feedback by:
+1. Adding XML parsing to handle dependencies and other relevant data.
+2. Ensuring file metadata is updated after file operations.
+3. Implementing a dedicated function to handle dependencies.
+4. Including functions to update project and development server information.
+5. Enhancing error handling to capture and log all necessary details.
