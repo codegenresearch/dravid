@@ -89,3 +89,5 @@ def get_instruction_prompt():
 9. **Avoid Redundant Steps**: Ensured each step serves a clear purpose.
 10. **Safety Checks**: Enhanced command execution safety checks to prevent unintended modifications or deletions.
 11. **Line Limit**: Kept the code within a reasonable line limit.
+
+This should address the syntax error and align the code more closely with the expected structure and guidelines.
