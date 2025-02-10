@@ -171,7 +171,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
 
 
 ### Key Changes Made:
-1. **Removed Improperly Formatted Comment**: Ensured that all comments are properly formatted using `#` for single-line comments or triple quotes for multi-line comments.
+1. **Removed Improperly Formatted Comment**: Removed the improperly formatted comment that was causing the `SyntaxError`.
 2. **Test Naming Consistency**: Ensured that test method names are consistent and accurately reflect their purpose.
 3. **Output Messages**: Verified that the output messages in assertions match exactly with the expected output messages.
 4. **Mock Call Assertions**: Ensured that the assertions for mock calls are consistent with the expected behavior.
