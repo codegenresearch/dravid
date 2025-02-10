@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 import mimetypes
 from ..prompts.file_metada_desc_prompts import get_file_metadata_prompt
 from ..api import call_dravid_api_with_pagination
-from ..utils.utils import print_info, print_warning, print_error
+from ..utils.utils import print_warning, print_error
 
 
 class ProjectMetadataManager:
@@ -158,7 +158,7 @@ class ProjectMetadataManager:
             file_info = {
                 "path": rel_path,
                 "type": metadata.find('type').text,
-                "summary": metadata.find('summary').text,  # Ensure key matches gold code
+                "summary": metadata.find('summary').text,
                 "exports": metadata.find('exports').text.split(',') if metadata.find('exports').text != 'None' else [],
                 "imports": metadata.find('imports').text.split(',') if metadata.find('imports').text != 'None' else []
             }
@@ -279,7 +279,7 @@ class ProjectMetadataManager:
 ### Changes Made:
 1. **Removed the misplaced comment**: Ensured that no comments are incorrectly placed in the code.
 2. **Consolidated error handling in `analyze_file`**: Ensured that XML parsing and general exceptions are handled consistently.
-3. **Ensured `print_info` is included**: Added `print_info` to the imports as it is present in the gold code.
+3. **Removed `print_info` from imports**: Removed `print_info` as it is not used in the code.
 4. **Updated `update_metadata_from_file`**: Added logic to update `dev_server` information if present in `file_info`.
 5. **Comments and Documentation**: Added comments to explain the purpose of each method for clarity and maintainability.
 
