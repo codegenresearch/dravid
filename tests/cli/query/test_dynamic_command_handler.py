@@ -20,7 +20,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
     @patch('drd.cli.query.dynamic_command_handler.print_step')
     @patch('drd.cli.query.dynamic_command_handler.print_info')
     @patch('drd.cli.query.dynamic_command_handler.print_debug')
-    def test_execute_commands_success(self, mock_print_debug, mock_print_info, mock_print_step):
+    def test_execute_commands(self, mock_print_debug, mock_print_info, mock_print_step):
         commands = [
             {'type': 'explanation', 'content': 'Test explanation'},
             {'type': 'shell', 'command': 'echo "Hello"'},
@@ -49,7 +49,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
     @patch('drd.cli.query.dynamic_command_handler.print_info')
     @patch('drd.cli.query.dynamic_command_handler.print_success')
     @patch('drd.cli.query.dynamic_command_handler.click.echo')
-    def test_handle_shell_command_success(self, mock_echo, mock_print_success, mock_print_info):
+    def test_handle_shell_command(self, mock_echo, mock_print_success, mock_print_info):
         cmd = {'command': 'echo "Hello"'}
         self.executor.execute_shell_command.return_value = "Hello"
 
@@ -63,7 +63,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
     @patch('drd.cli.query.dynamic_command_handler.print_info')
     @patch('drd.cli.query.dynamic_command_handler.print_success')
     @patch('drd.cli.query.dynamic_command_handler.update_file_metadata')
-    def test_handle_file_operation_success(self, mock_update_metadata, mock_print_success, mock_print_info):
+    def test_handle_file_operation(self, mock_update_metadata, mock_print_success, mock_print_info):
         cmd = {'operation': 'CREATE', 'filename': 'test.txt', 'content': 'Test content'}
         self.executor.perform_file_operation.return_value = True
 
@@ -75,7 +75,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
         mock_print_success.assert_called_once_with('Successfully performed CREATE on file: test.txt')
 
     @patch('drd.cli.query.dynamic_command_handler.generate_file_description')
-    def test_update_file_metadata_success(self, mock_generate_description):
+    def test_update_file_metadata(self, mock_generate_description):
         cmd = {'filename': 'test.txt', 'content': 'Test content'}
         mock_generate_description.return_value = ('python', 'Test file', ['test_function'])
 
@@ -96,7 +96,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
     @patch('drd.cli.query.dynamic_command_handler.call_dravid_api')
     @patch('drd.cli.query.dynamic_command_handler.execute_commands')
     @patch('drd.cli.query.dynamic_command_handler.click.echo')
-    def test_handle_error_with_dravid_success(self, mock_echo, mock_execute_commands, mock_call_api, mock_print_success, mock_print_info, mock_print_error):
+    def test_handle_error_with_dravid(self, mock_echo, mock_execute_commands, mock_call_api, mock_print_success, mock_print_info, mock_print_error):
         error = Exception("Test error")
         cmd = {'type': 'shell', 'command': 'echo "Hello"'}
 
