@@ -19,6 +19,7 @@ def suggest_file_alternative(file_path, project_metadata):
         f"The file '{file_path}' doesn't exist. Can you suggest similar existing files or interpret what the user might have meant? "
         f"Use the following project metadata as context:\n\n{project_metadata}"
     )
+    print_info(f"Querying Dravid API for suggestions on '{file_path}'...")
     response = call_dravid_api_with_pagination(query)
     return response
 
@@ -33,7 +34,7 @@ def handle_ask_command(ask, file, debug):
         if content is not None:
             context += f"Content of {file_path}:\n{content}\n\n"
         else:
-            print_warning(f"File not found: {file_path}. Attempting to find an alternative...")
+            print_warning(f"File not found: {file_path}.")
             suggestion = suggest_file_alternative(file_path, project_metadata)
             print_info(f"Suggested alternative: {suggestion}")
             user_input = click.prompt("Do you want to proceed without this file? (y/n)", type=str)
@@ -48,4 +49,5 @@ def handle_ask_command(ask, file, debug):
         print_error("Please provide a question using --ask or through stdin.")
         return
 
+    print_info("Streaming response from Dravid API...")
     stream_dravid_api(context, print_chunk=True)
