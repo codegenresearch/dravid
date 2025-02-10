@@ -20,7 +20,7 @@ def get_instruction_prompt():
       <content>
         <![CDATA[
           def example():
-           re...
+              pass
         ]]>
       </content>
     </step>
@@ -53,13 +53,13 @@ def get_instruction_prompt():
               {
                 "filename": "app.py",
                 "type": "Python",
-                "description": "...",
+                "description": "Main application file",
                 "exports": "None"
               },
               {
                 "filename": "drd.json",
                 "type": "json",
-                "description": "",
+                "description": "Project metadata",
                 "exports": "None"
               }
             ],
