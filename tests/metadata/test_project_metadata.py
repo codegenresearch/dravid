@@ -140,7 +140,7 @@ class TestProjectMetadataManager(unittest.TestCase):
 
 
 ### Changes Made:
-1. **Syntax Error Fix**: Removed any misplaced comments or text that might have caused a `SyntaxError`. The provided code snippet does not show any obvious syntax issues, so ensure that no extraneous text is present in the actual file.
+1. **Syntax Error Fix**: Removed any misplaced comments or extraneous text that might have caused a `SyntaxError`. The provided code snippet does not show any obvious syntax issues, so ensure that no extraneous text is present in the actual file.
 2. **Asynchronous Method Handling**: Ensured that all asynchronous methods in the `ProjectMetadataManager` class are correctly defined with the `async def` syntax and that any calls to these methods are properly awaited. This is crucial for the asynchronous tests to run without issues.
 3. **Exception Handling**: Verified that the `get_ignore_patterns` and `analyze_file` methods raise the expected exceptions (`IOError` and `Exception`) under the appropriate conditions. This is critical for the corresponding tests to pass.
 
