@@ -4,6 +4,7 @@ import os
 import sys
 import json
 from datetime import datetime
+import xml.etree.ElementTree as ET
 
 # Assuming the project structure, adjust the import path as necessary
 from src.drd.metadata.project_metadata import ProjectMetadataManager
@@ -77,12 +78,13 @@ class TestProjectMetadataManager(unittest.TestCase):
         <response>
           <metadata>
             <type>python</type>
-            <summary>A simple Python script</summary>
+            <description>A simple Python script</description>
             <exports>None</exports>
             <imports>None</imports>
           </metadata>
         </response>
         '''
+        response = ET.fromstring(mock_api_call.return_value)
         file_info = await self.manager.analyze_file('/fake/project/dir/script.py')
         self.assertEqual(file_info['path'], 'script.py')
         self.assertEqual(file_info['type'], 'python')
@@ -110,3 +112,6 @@ class TestProjectMetadataManager(unittest.TestCase):
         self.assertEqual(metadata['environment']['primary_language'], 'python')
         self.assertEqual(len(metadata['key_files']), 1)
         self.assertEqual(metadata['key_files'][0]['path'], 'main.py')
+        self.assertEqual(metadata['key_files'][0]['summary'], 'Main Python script')
+        self.assertEqual(metadata['key_files'][0]['exports'], ['main_function'])
+        self.assertEqual(metadata['key_files'][0]['imports'], ['os'])
