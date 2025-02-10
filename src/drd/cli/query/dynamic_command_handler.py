@@ -1,7 +1,6 @@
 import traceback
 import click
 from ...api.main import call_dravid_api
-import xml.etree.ElementTree as ET
 from ...utils import print_error, print_success, print_info, print_step, print_debug
 from ...metadata.common_utils import generate_file_description
 from ...prompts.error_resolution_prompt import get_error_resolution_prompt
@@ -76,8 +75,6 @@ def handle_file_operation(cmd, executor, metadata_manager):
     elif operation_performed:
         print_success(
             f"Successfully performed {cmd['operation']} on file: {cmd['filename']}")
-        if cmd['operation'] in ['CREATE', 'UPDATE']:
-            update_file_metadata(cmd, metadata_manager, executor)
         return "Success"
     else:
         raise Exception(
@@ -97,57 +94,22 @@ def handle_metadata_operation(cmd, metadata_manager):
 
 
 def update_file_metadata(cmd, metadata_manager, executor):
-    file_info = metadata_manager.analyze_file(cmd['filename'])
-    if file_info:
-        metadata_manager.update_file_metadata(
-            file_info['path'],
-            file_info['type'],
-            cmd.get('content', ''),
-            file_info['summary'],
-            file_info['exports'],
-            file_info['imports']
-        )
-
-        # Handle dependencies from the XML response
-        handle_dependencies(file_info, metadata_manager)
-
-
-def handle_dependencies(file_info, metadata_manager):
-    if 'xml_response' in file_info:
-        try:
-            root = ET.fromstring(file_info['xml_response'])
-            dependencies = root.find('.//external_dependencies')
-            if dependencies is not None:
-                for dep in dependencies.findall('dependency'):
-                    dependency_info = dep.text.strip()
-                    metadata_manager.add_external_dependency(dependency_info)
-                print_info(
-                    f"Added {len(dependencies)} dependencies to the project metadata.")
-
-            # Handle other metadata updates
-            update_project_info(root, metadata_manager)
-            update_dev_server_info(root, metadata_manager)
-        except ET.ParseError:
-            print_error("Failed to parse XML response for dependencies")
-
-
-def update_project_info(root, metadata_manager):
-    project_info = root.find('.//project_info')
-    if project_info is not None:
-        for field in ['name', 'version', 'description']:
-            element = project_info.find(field)
-            if element is not None and element.text:
-                metadata_manager.metadata['project_info'][field] = element.text.strip(
-                )
-
-
-def update_dev_server_info(root, metadata_manager):
-    dev_server = root.find('.//dev_server')
-    if dev_server is not None:
-        start_command = dev_server.find('start_command')
-        if start_command is not None and start_command.text:
-            metadata_manager.metadata['dev_server']['start_command'] = start_command.text.strip(
-            )
+    project_context = metadata_manager.get_project_context()
+    folder_structure = executor.get_folder_structure()
+    file_type, description, exports = generate_file_description(
+        cmd['filename'],
+        cmd.get('content', ''),
+        project_context,
+        folder_structure
+    )
+    metadata_manager.update_file_metadata(
+        cmd['filename'],
+        file_type,
+        cmd.get('content', ''),
+        description,
+        exports
+    )
+    print_debug(f"Updated metadata for {cmd['filename']} with type: {file_type}, description: {description}, exports: {exports}")
 
 
 def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, previous_context="", debug=False):
