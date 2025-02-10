@@ -50,7 +50,7 @@ Ensure that all other tags (type, summary, file_category, path, exports, imports
 2. **Path Specification**: Included the `path` field to reflect the full path of the file.
 3. **Type Specification**: Included the `type` field to specify the programming language or file type.
 4. **Summary Clarity**: Included a `summary` field with a concise description.
-5. **Exports and Imports**: Included the `exports` and `imports` fields with the specified format.
+5. **Exports and Imports Format**: Included the `exports` and `imports` fields with the specified format.
 6. **External Dependencies**: Included the `external_dependencies` section with the correct format.
 7. **Handling Empty Values**: Used `<exports>None</exports>` and `<imports>None</imports>` for empty values.
 8. **XML Structure**: Ensured the XML structure follows the specified format closely.
