@@ -4,8 +4,6 @@ from ...api.main import call_dravid_api
 from ...utils import print_error, print_success, print_info, print_step, print_debug
 from ...metadata.common_utils import generate_file_description
 from ...prompts.error_resolution_prompt import get_error_resolution_prompt
-
-# Importing necessary functions for handling different types of operations
 from ...utils.step_executor import Executor
 from ...utils.file_utils import get_file_content
 from ...utils.input import confirm_with_user
@@ -29,6 +27,8 @@ def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=F
 
         if cmd['type'] == 'explanation':
             output = f"Step {i}/{total_steps}: Explanation - {cmd['content']}"
+            all_outputs.append(output)
+            print_info(output)
         else:
             try:
                 if cmd['type'] == 'shell':
@@ -44,17 +44,24 @@ def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=F
 
                 if isinstance(output, str) and output.startswith("Skipping"):
                     print_info(f"Step {i}/{total_steps}: {output}")
+                    all_outputs.append(f"Step {i}/{total_steps}: {output}")
                 else:
-                    print_success(
-                        f"Step {i}/{total_steps}: {cmd['type'].capitalize()} command - {cmd.get('command', '')} {cmd.get('operation', '')}\nOutput: {output}")
+                    success_message = (
+                        f"Step {i}/{total_steps}: {cmd['type'].capitalize()} command - "
+                        f"{cmd.get('command', '')} {cmd.get('operation', '')}\nOutput: {output}"
+                    )
+                    print_success(success_message)
+                    all_outputs.append(success_message)
 
             except Exception as e:
-                error_message = f"Step {i}/{total_steps}: Error executing {step_description}: {cmd}\nError details: {str(e)}"
+                error_message = (
+                    f"Step {i}/{total_steps}: Error executing {step_description}: {cmd}\n"
+                    f"Error details: {str(e)}"
+                )
                 print_error(error_message)
                 all_outputs.append(error_message)
                 return False, i, str(e), "\n".join(all_outputs)
 
-        all_outputs.append(output)
         if debug:
             print_debug(f"Completed step {i}/{total_steps}")
 
@@ -74,7 +81,8 @@ def handle_shell_command(cmd, executor):
         print_info(output)
         return output
     if output is None:
-        raise Exception(f"Command failed: {cmd['command']}")
+        output = "No output"
+    print_success(f"Successfully executed: {cmd['command']}")
     if output:
         click.echo(f"Command output:\n{output}")
     return output
@@ -101,6 +109,7 @@ def handle_file_operation(cmd, executor, metadata_manager):
     elif operation_performed:
         print_success(
             f"Successfully performed {cmd['operation']} on file: {cmd['filename']}")
+        update_file_metadata(cmd, metadata_manager, executor)
         return "Success"
     else:
         raise Exception(
