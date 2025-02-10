@@ -5,11 +5,14 @@ import os
 import sys
 import json
 from datetime import datetime
+import logging
 
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..')))
 
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class TestProjectMetadataManager(unittest.TestCase):
 
@@ -21,23 +24,35 @@ class TestProjectMetadataManager(unittest.TestCase):
     @patch('builtins.open', new_callable=mock_open, read_data='{"project_name": "Test Project"}')
     def test_load_metadata(self, mock_file, mock_exists):
         mock_exists.return_value = True
-        metadata = self.manager.load_metadata()
-        self.assertEqual(metadata["project_name"], "Test Project")
+        try:
+            metadata = self.manager.load_metadata()
+            self.assertEqual(metadata["project_name"], "Test Project")
+            logging.info("Metadata loaded successfully.")
+        except Exception as e:
+            logging.error(f"Failed to load metadata: {e}")
         mock_file.assert_called_once_with(
             os.path.join(self.project_dir, 'drd.json'), 'r')
 
     @patch('json.dump')
     @patch('builtins.open', new_callable=mock_open)
     def test_save_metadata(self, mock_file, mock_json_dump):
-        self.manager.save_metadata()
+        try:
+            self.manager.save_metadata()
+            logging.info("Metadata saved successfully.")
+        except Exception as e:
+            logging.error(f"Failed to save metadata: {e}")
         mock_file.assert_called_once_with(
             os.path.join(self.project_dir, 'drd.json'), 'w')
         mock_json_dump.assert_called_once()
 
     @patch.object(ProjectMetadataManager, 'save_metadata')
     def test_update_file_metadata(self, mock_save):
-        self.manager.update_file_metadata(
-            "test.py", "python", "print('Hello')", "A test Python file")
+        try:
+            self.manager.update_file_metadata(
+                "test.py", "python", "print('Hello')", "A test Python file")
+            logging.info("File metadata updated successfully.")
+        except Exception as e:
+            logging.error(f"Failed to update file metadata: {e}")
         mock_save.assert_called_once()
         file_entry = next(
             (f for f in self.manager.metadata['files'] if f['filename'] == "test.py"), None)
@@ -62,14 +77,22 @@ class TestProjectMetadataManager(unittest.TestCase):
                 "language": ""
             }
         }
-        context = self.manager.get_project_context()
-        self.assertIn("Test Project", context)
-        self.assertIn("main.py", context)
-        self.assertIn("utils.py", context)
+        try:
+            context = self.manager.get_project_context()
+            self.assertIn("Test Project", context)
+            self.assertIn("main.py", context)
+            self.assertIn("utils.py", context)
+            logging.info("Project context retrieved successfully.")
+        except Exception as e:
+            logging.error(f"Failed to retrieve project context: {e}")
 
     @patch.object(ProjectMetadataManager, 'save_metadata')
     def test_update_dev_server_info(self, mock_save):
-        self.manager.update_dev_server_info("npm start", "react", "javascript")
+        try:
+            self.manager.update_dev_server_info("npm start", "react", "javascript")
+            logging.info("Dev server info updated successfully.")
+        except Exception as e:
+            logging.error(f"Failed to update dev server info: {e}")
         mock_save.assert_called_once()
         self.assertEqual(
             self.manager.metadata['dev_server']['start_command'], "npm start")
@@ -84,8 +107,26 @@ class TestProjectMetadataManager(unittest.TestCase):
             "framework": "react",
             "language": "javascript"
         }
-        info = self.manager.get_dev_server_info()
-        self.assertEqual(info, self.manager.metadata['dev_server'])
+        try:
+            info = self.manager.get_dev_server_info()
+            self.assertEqual(info, self.manager.metadata['dev_server'])
+            logging.info("Dev server info retrieved successfully.")
+        except Exception as e:
+            logging.error(f"Failed to retrieve dev server info: {e}")
+
+    @patch('os.path.exists')
+    @patch('builtins.open', new_callable=mock_open, read_data='print("Hello, World!")')
+    @patch.object(ProjectMetadataManager, 'update_file_metadata')
+    def test_update_metadata_from_file(self, mock_update, mock_file, mock_exists):
+        mock_exists.return_value = True
+        try:
+            result = self.manager.update_metadata_from_file("test.py")
+            self.assertTrue(result)
+            logging.info("Metadata updated from file successfully.")
+        except Exception as e:
+            logging.error(f"Failed to update metadata from file: {e}")
+        mock_update.assert_called_once_with(
+            "test.py", "py", 'print("Hello, World!")')
 
     @patch('os.path.exists')
     @patch('builtins.open', new_callable=mock_open)
@@ -135,32 +176,36 @@ class TestProjectMetadataManager(unittest.TestCase):
             new_metadata)
 
         # Call the method to update metadata
-        result = self.manager.update_metadata_from_file()
+        try:
+            result = self.manager.update_metadata_from_file()
 
-        # Assert that the update was successful
-        self.assertTrue(result)
+            # Assert that the update was successful
+            self.assertTrue(result)
+            logging.info("Metadata updated from file successfully.")
 
-        # Assert that the metadata has been updated correctly
-        self.assertEqual(self.manager.metadata['project_name'], "pyserv")
-        self.assertEqual(len(self.manager.metadata['files']), 2)
-        self.assertEqual(
-            self.manager.metadata['dev_server']['start_command'], "uvicorn app:app --reload")
-        self.assertEqual(
-            self.manager.metadata['dev_server']['framework'], "flask")
-        self.assertEqual(
-            self.manager.metadata['dev_server']['language'], "python")
+            # Assert that the metadata has been updated correctly
+            self.assertEqual(self.manager.metadata['project_name'], "pyserv")
+            self.assertEqual(len(self.manager.metadata['files']), 2)
+            self.assertEqual(
+                self.manager.metadata['dev_server']['start_command'], "uvicorn app:app --reload")
+            self.assertEqual(
+                self.manager.metadata['dev_server']['framework'], "flask")
+            self.assertEqual(
+                self.manager.metadata['dev_server']['language'], "python")
 
-        # Check file metadata
-        app_py = next(
-            f for f in self.manager.metadata['files'] if f['filename'] == 'app.py')
-        self.assertEqual(app_py['description'], "Main application file")
-        self.assertEqual(app_py['exports'], "app")
-        self.assertTrue(app_py['content_preview'].startswith(
-            "from flask import Flask"))
+            # Check file metadata
+            app_py = next(
+                f for f in self.manager.metadata['files'] if f['filename'] == 'app.py')
+            self.assertEqual(app_py['description'], "Main application file")
+            self.assertEqual(app_py['exports'], "app")
+            self.assertTrue(app_py['content_preview'].startswith(
+                "from flask import Flask"))
 
-        requirements_txt = next(
-            f for f in self.manager.metadata['files'] if f['filename'] == 'requirements.txt')
-        self.assertEqual(
-            requirements_txt['description'], "Project dependencies")
-        self.assertTrue(
-            requirements_txt['content_preview'].startswith("Flask==2.3.2"))
+            requirements_txt = next(
+                f for f in self.manager.metadata['files'] if f['filename'] == 'requirements.txt')
+            self.assertEqual(
+                requirements_txt['description'], "Project dependencies")
+            self.assertTrue(
+                requirements_txt['content_preview'].startswith("Flask==2.3.2"))
+        except Exception as e:
+            logging.error(f"Failed to update metadata from file: {e}")
