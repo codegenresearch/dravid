@@ -2,7 +2,7 @@ import re
 import os
 from .server_monitor import DevServerMonitor
 from .error_resolver import monitoring_handle_error_with_dravid
-from ...utils import print_info, print_error
+from ...utils import print_info
 
 
 def run_dev_server_with_monitoring(command: str):
@@ -16,7 +16,7 @@ def run_dev_server_with_monitoring(command: str):
     monitor = DevServerMonitor(current_dir, error_handlers, command)
     try:
         monitor.start()
-        print_info("🚀 Server monitor started. Press Ctrl+C to stop.")
+        print_info("🛠️ Server monitor started. Press Ctrl+C to stop.")
         while not monitor.should_stop.is_set():
             pass
         print_info("Server monitor has ended.")
