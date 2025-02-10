@@ -1,6 +1,6 @@
 import unittest
 import threading
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, ANY
 from drd.cli.monitor.input_handler import InputHandler
 
 
@@ -21,19 +21,20 @@ class TestInputHandler(unittest.TestCase):
         thread = threading.Thread(target=run_input_handler)
         thread.start()
 
-        thread.join(timeout=10)
+        # Add a small delay to allow the thread to process the input
+        thread.join(timeout=1)
 
         if thread.is_alive():
             self.fail("_handle_input did not complete within the timeout period")
 
         self.mock_monitor.stop.assert_called_once()
         self.assertEqual(mock_input.call_count, 2)
-        mock_execute_command.assert_called_once()
+        mock_execute_command.assert_called_once_with('test input', None, False, ANY, warn=False)
 
     @patch('drd.cli.monitor.input_handler.execute_dravid_command')
     def test_process_input(self, mock_execute_command):
         self.input_handler._process_input('test command')
-        mock_execute_command.assert_called_once()
+        mock_execute_command.assert_called_once_with('test command', None, False, ANY, warn=False)
         self.mock_monitor.processing_input.set.assert_called_once()
         self.mock_monitor.processing_input.clear.assert_called_once()
 
@@ -44,7 +45,7 @@ class TestInputHandler(unittest.TestCase):
     def test_handle_vision_input(self, mock_exists, mock_input, mock_autocomplete, mock_execute_command):
         self.input_handler._handle_vision_input()
         mock_execute_command.assert_called_once_with(
-            'process this image with instructions', '/path/to/image.jpg', False, MagicMock(), warn=False)
+            'process this image with instructions', '/path/to/image.jpg', False, ANY, warn=False)
         self.mock_monitor.processing_input.set.assert_called_once()
         self.mock_monitor.processing_input.clear.assert_called_once()
 
