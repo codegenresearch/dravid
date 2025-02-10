@@ -78,7 +78,7 @@ def get_instruction_prompt():
 
 
 ### Key Changes:
-1. **Removed Extraneous Comments**: Removed all comments and notes within the XML string to ensure valid Python syntax.
+1. **Removed Extraneous Comments**: Removed all comments and notes within the function to ensure valid Python syntax.
 2. **XML Structure**: Ensured proper indentation and formatting of the XML structure.
 3. **Explanation Section**: Made the explanation concise and directly related to the steps.
 4. **Command Execution Order**: Ensured the steps are in a logical order.
