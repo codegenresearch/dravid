@@ -1,4 +1,3 @@
-import asyncio
 import unittest
 from unittest.mock import patch, MagicMock, call, mock_open
 import xml.etree.ElementTree as ET
@@ -13,7 +12,6 @@ from drd.cli.query.dynamic_command_handler import (
 )
 
 
-# Change back to unittest.TestCase
 class TestDynamicCommandHandler(unittest.TestCase):
 
     def setUp(self):
@@ -76,29 +74,20 @@ class TestDynamicCommandHandler(unittest.TestCase):
         self.assertEqual(output, "Success")
         self.executor.perform_file_operation.assert_called_once_with(
             'CREATE', 'test.txt', 'Test content', force=True)
-        # mock_update_metadata.assert_called_once_with(
-        # cmd, self.metadata_manager, self.executor)
+        mock_update_metadata.assert_called_once_with(
+            cmd, self.metadata_manager, self.executor)
 
     @patch('drd.cli.query.dynamic_command_handler.generate_file_description')
-    async def test_update_file_metadata(self, mock_generate_description):
+    def test_update_file_metadata(self, mock_generate_description):
         cmd = {'filename': 'test.txt', 'content': 'Test content'}
-        mock_file_info = {
-            'path': 'test.txt',
-            'type': 'python',
-            'summary': 'Test file',
-            'exports': ['test_function'],
-            'imports': [],
-            'xml_response': '<response><file_info></file_info></response>'
-        }
-        self.metadata_manager.analyze_file.return_value = mock_file_info
+        mock_generate_description.return_value = (
+            'python', 'Test file', ['test_function'])
 
-        await update_file_metadata(cmd, self.metadata_manager, self.executor)
+        update_file_metadata(cmd, self.metadata_manager, self.executor)
 
         self.metadata_manager.analyze_file.assert_called_once_with('test.txt')
         self.metadata_manager.update_file_metadata.assert_called_once_with(
-            'test.txt', 'python', 'Test content', 'Test file', [
-                'test_function'], []
-        )
+            'test.txt', 'python', 'Test content', 'Test file', ['test_function'])
 
     @patch('drd.cli.query.dynamic_command_handler.print_error')
     @patch('drd.cli.query.dynamic_command_handler.print_info')
@@ -143,7 +132,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
     @patch('drd.cli.query.dynamic_command_handler.print_step')
     @patch('drd.cli.query.dynamic_command_handler.print_info')
     @patch('drd.cli.query.dynamic_command_handler.print_debug')
-    def test_execute_commands(self, mock_print_debug, mock_print_info, mock_print_step):
+    def test_execute_commands_with_debug(self, mock_print_debug, mock_print_info, mock_print_step):
         commands = [
             {'type': 'explanation', 'content': 'Test explanation'},
             {'type': 'shell', 'command': 'echo "Hello"'},
@@ -163,7 +152,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
         self.assertIsNone(error)
         self.assertIn("Explanation - Test explanation", output)
         self.assertIn("Shell command - echo \"Hello\"", output)
-        self.assertIn("File command -  CREATE", output)
+        self.assertIn("File command - CREATE - test.txt", output)
         mock_print_debug.assert_has_calls([
             call("Completed step 1/3"),
             call("Completed step 2/3"),
@@ -220,7 +209,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
         self.assertEqual(steps_completed, 2)
         self.assertIsNone(error)
         self.assertIn("Shell command - echo \"Hello\"", output)
-        self.assertIn("File command -  CREATE", output)
+        self.assertIn("File command - CREATE - test.txt", output)
         mock_print_debug.assert_has_calls([
             call("Completed step 1/2"),
             call("Completed step 2/2")
@@ -243,8 +232,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
         self.assertTrue(success)
         self.assertEqual(steps_completed, 2)
         self.assertIsNone(error)
-        self.assertIn("Requires_restart command - ", output)
-        self.assertIn("requires restart if the server is running", output)
+        self.assertIn("Requires_restart command - Server needs to be restarted", output)
         self.assertIn("Shell command - echo \"Hello\"", output)
         mock_print_debug.assert_has_calls([
             call("Completed step 1/2"),
