@@ -20,5 +20,5 @@ __all__ = [
     'print_success',
     'print_warning',
     'Loader',
-    'run_with_loader'
+    'run_with_loader',
 ]
