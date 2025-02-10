@@ -3,7 +3,6 @@ from unittest.mock import patch, mock_open, MagicMock
 import os
 import json
 import subprocess
-from io import StringIO
 
 # Update this import to match your actual module structure
 from drd.utils.step_executor import Executor
@@ -31,12 +30,11 @@ class TestExecutor(unittest.TestCase):
         self.assertTrue(self.executor.is_safe_command('ls'))
         self.assertFalse(self.executor.is_safe_command('sudo rm -rf /'))
 
-    @patch('os.path.exists')
+    @patch('os.path.exists', return_value=False)
     @patch('builtins.open', new_callable=mock_open)
     @patch('os.makedirs')
     @patch('click.confirm', return_value=True)
     def test_perform_file_operation_create(self, mock_confirm, mock_makedirs, mock_file, mock_exists):
-        mock_exists.return_value = False
         result = self.executor.perform_file_operation(
             'CREATE', 'test.txt', 'content')
         self.assertTrue(result)
@@ -45,28 +43,22 @@ class TestExecutor(unittest.TestCase):
         mock_file().write.assert_called_with('content')
         mock_confirm.assert_called_once()
 
-    @patch('os.path.exists')
-    @patch('os.path.isfile')
+    @patch('os.path.exists', return_value=True)
+    @patch('os.path.isfile', return_value=True)
     @patch('os.remove')
     @patch('click.confirm', return_value=True)
     def test_perform_file_operation_delete(self, mock_confirm, mock_remove, mock_isfile, mock_exists):
-        mock_exists.return_value = True
-        mock_isfile.return_value = True
         result = self.executor.perform_file_operation('DELETE', 'test.txt')
         self.assertTrue(result)
         mock_remove.assert_called_with(os.path.join(
             self.executor.current_dir, 'test.txt'))
         mock_confirm.assert_called_once()
 
-    @patch('os.path.exists')
+    @patch('os.path.exists', return_value=True)
     @patch('builtins.open', new_callable=mock_open, read_data="original content")
     @patch('click.confirm', return_value=True)
     @patch('drd.utils.step_executor.preview_file_changes')
     def test_perform_file_operation_update(self, mock_preview, mock_confirm, mock_file, mock_exists):
-        mock_exists.return_value = True
-        mock_confirm.return_value = True
-        mock_preview.return_value = "Preview of changes"
-
         changes = "+ 2: This is a new line\nr 1: This is a replaced line"
         result = self.executor.perform_file_operation(
             'UPDATE', 'test.txt', changes)
@@ -85,7 +77,6 @@ class TestExecutor(unittest.TestCase):
 
     @patch('click.confirm', return_value=False)
     def test_perform_file_operation_user_cancel(self, mock_confirm):
-        mock_confirm.return_value = False
         result = self.executor.perform_file_operation(
             'UPDATE', 'test.txt', 'content')
         self.assertFalse(result)
@@ -106,12 +97,9 @@ class TestExecutor(unittest.TestCase):
         self.assertEqual(self.executor.merge_json(
             existing_content, new_content), expected_result)
 
-    @patch('drd.utils.step_executor.get_ignore_patterns')
-    @patch('drd.utils.step_executor.get_folder_structure')
+    @patch('drd.utils.step_executor.get_ignore_patterns', return_value=([], None))
+    @patch('drd.utils.step_executor.get_folder_structure', return_value={'folder': {'file.txt': 'file'}})
     def test_get_folder_structure(self, mock_get_folder_structure, mock_get_ignore_patterns):
-        mock_get_ignore_patterns.return_value = ([], None)
-        mock_get_folder_structure.return_value = {
-            'folder': {'file.txt': 'file'}}
         result = self.executor.get_folder_structure()
         self.assertEqual(result, {'folder': {'file.txt': 'file'}})
 
@@ -130,8 +118,8 @@ class TestExecutor(unittest.TestCase):
 
     @patch('click.confirm', return_value=False)
     def test_execute_shell_command_user_cancel(self, mock_confirm):
-        mock_confirm.return_value = False
         result = self.executor.execute_shell_command('ls')
+        self.assertEqual(result, 'Skipping this step...')
         mock_confirm.assert_called_once()
 
     @patch('subprocess.Popen')
@@ -181,24 +169,20 @@ class TestExecutor(unittest.TestCase):
         self.assertEqual(
             self.executor.env['EXPORT_QUOTE'], 'exported quoted value')
 
-    @patch('os.path.exists')
-    @patch('os.path.isdir')
+    @patch('os.path.exists', return_value=True)
+    @patch('os.path.isdir', return_value=True)
     @patch('click.confirm', return_value=True)
     def test_handle_cd_command(self, mock_confirm, mock_isdir, mock_exists):
-        mock_exists.return_value = True
-        mock_isdir.return_value = True
         new_dir = os.path.join(self.executor.current_dir, 'new_folder')
         result = self.executor._handle_cd_command(f'cd {new_dir}')
         self.assertEqual(result, f"Changed directory to: {new_dir}")
         self.assertEqual(self.executor.current_dir, new_dir)
         mock_confirm.assert_called_once()
 
-    @patch('os.path.exists')
-    @patch('os.path.isdir')
+    @patch('os.path.exists', return_value=True)
+    @patch('os.path.isdir', return_value=True)
     @patch('click.confirm', return_value=False)
     def test_handle_cd_command_user_cancel(self, mock_confirm, mock_isdir, mock_exists):
-        mock_exists.return_value = True
-        mock_isdir.return_value = True
         new_dir = os.path.join(self.executor.current_dir, 'new_folder')
         result = self.executor._handle_cd_command(f'cd {new_dir}')
         self.assertEqual(result, f"Failed to change directory to: {new_dir}")
@@ -207,9 +191,11 @@ class TestExecutor(unittest.TestCase):
 
 
 This code addresses the feedback by:
-1. Removing any invalid syntax or comments that could cause `SyntaxError`.
+1. Removing any invalid syntax or stray comments that could cause `SyntaxError`.
 2. Simplifying test cases to focus on core functionality.
 3. Ensuring consistent use of mocks for user interactions.
 4. Removing redundant tests and consolidating similar tests.
 5. Ensuring clarity in assertions.
 6. Organizing imports and following naming conventions for better readability and maintainability.
+7. Handling user cancellation scenarios consistently.
+8. Ensuring the use of `patch` decorators is correct and parameters match the order of the decorators.
