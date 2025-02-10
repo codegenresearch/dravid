@@ -144,18 +144,18 @@ def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, pr
     )
 
     print_info(
-        "🏏 Sending error information to dravid for analysis(1 LLM call)...\n")
+        "Sending error information to Dravid for analysis (1 LLM call)...\n")
 
     try:
         fix_commands = call_dravid_api(
             error_query, include_context=True)
         handle_xml_response(fix_commands, metadata_manager)
     except ValueError as e:
-        print_error(f"Error parsing dravid's response: {str(e)}")
+        print_error(f"Error parsing Dravid's response: {str(e)}")
         return False
 
-    print_info("🩺 Dravid's suggested fix:", indent=2)
-    print_info("🔨 Applying dravid's suggested fix...", indent=2)
+    print_info("Dravid's suggested fix:", indent=2)
+    print_info("Applying Dravid's suggested fix...", indent=2)
 
     fix_applied, step_completed, error_message, all_outputs = execute_commands(
         fix_commands, executor, metadata_manager, is_fix=True, debug=debug
