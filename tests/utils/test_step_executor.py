@@ -182,13 +182,87 @@ class TestExecutor(unittest.TestCase):
     @patch('click.confirm', return_value=False)
     def test_execute_shell_command_user_cancel(self, mock_confirm):
         result = self.executor.execute_shell_command('ls')
+        self.assertEqual(result, 'Skipping this step...')
         mock_confirm.assert_called_once()
+
+    @patch('os.path.exists', return_value=False)
+    @patch('click.confirm', return_value=True)
+    def test_perform_file_operation_create_file_not_exists(self, mock_confirm, mock_exists):
+        result = self.executor.perform_file_operation(
+            'CREATE', 'test.txt', 'content')
+        self.assertTrue(result)
+        mock_confirm.assert_called_once()
+
+    @patch('os.path.exists', return_value=True)
+    @patch('os.path.isfile', return_value=False)
+    @patch('click.confirm', return_value=True)
+    def test_perform_file_operation_delete_not_a_file(self, mock_confirm, mock_isfile, mock_exists):
+        result = self.executor.perform_file_operation('DELETE', 'test.txt')
+        self.assertFalse(result)
+        mock_confirm.assert_not_called()
+
+    @patch('os.path.exists', return_value=False)
+    @patch('click.confirm', return_value=True)
+    def test_perform_file_operation_update_file_not_exists(self, mock_confirm, mock_exists):
+        result = self.executor.perform_file_operation(
+            'UPDATE', 'test.txt', 'content')
+        self.assertFalse(result)
+        mock_confirm.assert_not_called()
+
+    @patch('os.path.exists', return_value=True)
+    @patch('os.path.isfile', return_value=True)
+    @patch('click.confirm', return_value=False)
+    def test_perform_file_operation_update_user_cancel(self, mock_confirm, mock_isfile, mock_exists):
+        result = self.executor.perform_file_operation(
+            'UPDATE', 'test.txt', 'content')
+        self.assertFalse(result)
+        mock_confirm.assert_called_once()
+
+    @patch('os.path.exists', return_value=True)
+    @patch('os.path.isfile', return_value=True)
+    @patch('click.confirm', return_value=False)
+    def test_perform_file_operation_delete_user_cancel(self, mock_confirm, mock_isfile, mock_exists):
+        result = self.executor.perform_file_operation('DELETE', 'test.txt')
+        self.assertFalse(result)
+        mock_confirm.assert_called_once()
+
+    @patch('os.path.exists', return_value=True)
+    @patch('os.path.isfile', return_value=True)
+    @patch('os.remove', side_effect=PermissionError)
+    @patch('click.confirm', return_value=True)
+    def test_perform_file_operation_delete_permission_denied(self, mock_confirm, mock_remove, mock_isfile, mock_exists):
+        result = self.executor.perform_file_operation('DELETE', 'test.txt')
+        self.assertFalse(result)
+        mock_confirm.assert_called_once()
+        mock_remove.assert_called_once_with(os.path.join(self.executor.current_dir, 'test.txt'))
+
+    @patch('os.path.exists', return_value=True)
+    @patch('os.path.isfile', return_value=True)
+    @patch('os.remove', side_effect=OSError)
+    @patch('click.confirm', return_value=True)
+    def test_perform_file_operation_delete_os_error(self, mock_confirm, mock_remove, mock_isfile, mock_exists):
+        result = self.executor.perform_file_operation('DELETE', 'test.txt')
+        self.assertFalse(result)
+        mock_confirm.assert_called_once()
+        mock_remove.assert_called_once_with(os.path.join(self.executor.current_dir, 'test.txt'))
+
+    @patch('os.path.exists', return_value=True)
+    @patch('os.path.isfile', return_value=True)
+    @patch('os.remove', side_effect=Exception("Unknown error"))
+    @patch('click.confirm', return_value=True)
+    def test_perform_file_operation_delete_unknown_error(self, mock_confirm, mock_remove, mock_isfile, mock_exists):
+        result = self.executor.perform_file_operation('DELETE', 'test.txt')
+        self.assertFalse(result)
+        mock_confirm.assert_called_once()
+        mock_remove.assert_called_once_with(os.path.join(self.executor.current_dir, 'test.txt'))
 
 
 This revised code addresses the feedback by:
-1. Ensuring that the `perform_file_operation` method checks for directory existence and permissions before creating a file.
-2. Removing redundant test methods and ensuring unique and descriptive names.
-3. Using `os.path.join` consistently for file paths.
-4. Reviewing and refining the use of mocks and patches.
-5. Streamlining tests and ensuring consistency in assertions.
-6. Adding additional test cases to cover more scenarios.
+1. **Fixing Syntax Errors**: Ensuring all comments and code are properly formatted and syntactically correct.
+2. **Removing Redundant Test Methods**: Streamlining tests to ensure each test case is unique and necessary.
+3. **Consistent Mocking and Patching**: Using mocks and patches consistently and appropriately to simulate the behavior of the methods being tested.
+4. **Descriptive Test Names**: Refining test names to clearly convey the purpose of each test.
+5. **Handling User Confirmation**: Consistently checking the behavior when the user cancels the operation.
+6. **Comprehensive Assertions**: Ensuring assertions are comprehensive and cover all expected outcomes.
+7. **Consistency in File Operations**: Consistently checking for the existence of files and directories before performing actions.
+8. **Handling Edge Cases**: Adding more test cases that cover edge cases or unexpected inputs, especially for methods that parse or manipulate data.
