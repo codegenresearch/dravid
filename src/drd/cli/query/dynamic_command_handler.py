@@ -75,8 +75,10 @@ def handle_metadata_operation(cmd, metadata_manager):
             print_success(f"Updated metadata for file: {cmd['filename']}")
             return f"Updated metadata for {cmd['filename']}"
         else:
+            print_error(f"Failed to update metadata for file: {cmd['filename']}")
             raise Exception(f"Failed to update metadata for file: {cmd['filename']}")
     else:
+        print_error(f"Unknown operation: {cmd['operation']}")
         raise Exception(f"Unknown operation: {cmd['operation']}")
 
 
