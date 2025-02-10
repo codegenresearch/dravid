@@ -42,11 +42,11 @@ def monitoring_handle_error_with_dravid(error, line, monitor):
         error_type, error_message, error_trace, line, project_context, file_context
     )
 
-    print_info("Sending error information to dravid for analysis...")
+    print_info("Sending error information to Dravid for analysis...")
     try:
         commands = call_dravid_api(error_query, include_context=True)
     except ValueError as e:
-        print_error(f"Error parsing dravid's response: {str(e)}")
+        print_error(f"Error parsing Dravid's response: {str(e)}")
         return False
 
     requires_restart = False
@@ -57,7 +57,7 @@ def monitoring_handle_error_with_dravid(error, line, monitor):
         elif command['type'] != 'explanation':
             fix_commands.append(command)
 
-    print_info("dravid's suggested fix:")
+    print_info("Dravid's suggested fix:")
     print_command_details(fix_commands)
 
     user_input = monitor.get_user_input(
@@ -65,7 +65,7 @@ def monitoring_handle_error_with_dravid(error, line, monitor):
     )
 
     if user_input.lower() == 'y':
-        print_info("Applying dravid's suggested fix...")
+        print_info("Applying Dravid's suggested fix...")
         executor = Executor()
         for cmd in fix_commands:
             if cmd['type'] == 'shell':
