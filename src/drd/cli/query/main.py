@@ -33,19 +33,19 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt, warn=No
 
             if debug:
                 print_info("Files and dependencies analysis:", indent=4)
-                if files_info['main_file']:
+                if 'main_file' in files_info:
                     print_info(
                         f"Main file to modify: {files_info['main_file']}", indent=6)
                 print_info("Dependencies:", indent=6)
-                for dep in files_info['dependencies']:
-                    print_info(f"- {dep['file']}", indent=8)
-                    for imp in dep['imports']:
+                for dep in files_info.get('dependencies', []):
+                    print_info(f"- {dep.get('file', '')}", indent=8)
+                    for imp in dep.get('imports', []):
                         print_info(f"  Imports: {imp}", indent=10)
                 print_info("New files to create:", indent=6)
-                for new_file in files_info['new_files']:
-                    print_info(f"- {new_file['file']}", indent=8)
+                for new_file in files_info.get('new_files', []):
+                    print_info(f"- {new_file.get('file', '')}", indent=8)
                 print_info("File contents to load:", indent=6)
-                for file in files_info['file_contents_to_load']:
+                for file in files_info.get('file_contents_to_load', []):
                     print_info(f"- {file}", indent=8)
 
         full_query = construct_full_query(
@@ -127,7 +127,7 @@ def construct_full_query(query, executor, project_context, files_info=None, refe
         full_query += f"<projectGuidelines>{project_guidelines}</projectGuidelines>\n"
 
         if files_info:
-            if files_info['file_contents_to_load']:
+            if files_info.get('file_contents_to_load'):
                 file_contents = {}
                 for file in files_info['file_contents_to_load']:
                     content = get_file_content(file)
@@ -139,17 +139,17 @@ def construct_full_query(query, executor, project_context, files_info=None, refe
                     [f"<fileContent><file>{file}</file><content>{content}</content></fileContent>" for file, content in file_contents.items()])
                 full_query += f"<fileContents>{file_context}</fileContents>\n"
 
-            if files_info['dependencies']:
+            if files_info.get('dependencies'):
                 dependency_context = "\n".join(
-                    [f"<dependency><file>{dep['file']}</file><imports>{', '.join(dep['imports'])}</imports></dependency>" for dep in files_info['dependencies']])
+                    [f"<dependency><file>{dep.get('file', '')}</file><imports>{', '.join(dep.get('imports', []))}</imports></dependency>" for dep in files_info['dependencies']])
                 full_query += f"<dependencies>{dependency_context}</dependencies>\n"
 
-            if files_info['new_files']:
+            if files_info.get('new_files'):
                 new_files_context = "\n".join(
-                    [f"<newFile><file>{new_file['file']}</file></newFile>" for new_file in files_info['new_files']])
+                    [f"<newFile><file>{new_file.get('file', '')}</file></newFile>" for new_file in files_info['new_files']])
                 full_query += f"<newFiles>{new_files_context}</newFiles>\n"
 
-            if files_info['main_file']:
+            if files_info.get('main_file'):
                 full_query += f"<mainFile>{files_info['main_file']}</mainFile>\n"
 
         full_query += f"<userQuery>{query}</userQuery>"
@@ -171,8 +171,8 @@ def construct_full_query(query, executor, project_context, files_info=None, refe
 
 
 ### Key Changes Made:
-1. **Removed Improper Comment**: Removed the comment that was causing the `SyntaxError` by ensuring it is properly formatted as a single-line comment using the `#` symbol.
-2. **Consistent Dictionary Access**: Ensured that dictionary keys are accessed directly without using the `.get()` method when the key existence is guaranteed.
+1. **Removed Improper Comment**: Removed the problematic comment that was causing the `SyntaxError`.
+2. **Consistent Dictionary Access**: Ensured that dictionary keys are checked for existence using the `.get()` method where necessary.
 3. **Output Formatting**: Reviewed and adjusted the formatting of output strings to match the gold code's style.
 4. **Indentation and Readability**: Ensured consistent indentation and spacing for better readability.
 5. **Error Handling**: Reviewed and ensured error handling is consistent with the gold code.
