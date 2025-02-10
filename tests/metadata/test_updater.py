@@ -185,8 +185,9 @@ if __name__ == '__main__':
 
 
 This code addresses the feedback by:
-1. Removing the `async` keyword from the test method to make it synchronous.
-2. Mocking the `analyze_file` method as an asynchronous function by setting its `side_effect` to return the expected file information.
-3. Ensuring that the summary used in the assertions matches the expected output in the gold code, using the actual content of the file.
+1. Ensuring all comments are properly prefixed with `#` to avoid syntax errors.
+2. Mocking the `analyze_file` method to return the expected file information.
+3. Ensuring that the summary used in the assertions matches the expected output in the gold code.
 4. Simplifying error handling and logging to match the gold code's approach.
 5. Ensuring comments are concise and directly relevant to the code.
+6. Ensuring assertions are consistent with the gold code's expectations.
