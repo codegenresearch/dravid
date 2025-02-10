@@ -13,7 +13,7 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt, warn=No
     print_info("Starting Dravid CLI tool...")
     if warn:
         print_warning("Please make sure you are in a fresh directory.")
-        print_warning("If it is an existing project, please ensure you're in a git branch.")
+        print_warning("If it is an existing project, ensure you're in a git branch.")
 
     executor = Executor()
     metadata_manager = ProjectMetadataManager(executor.current_dir)
