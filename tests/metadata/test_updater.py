@@ -33,7 +33,8 @@ class TestMetadataUpdater(unittest.TestCase):
     @patch('drd.metadata.updater.print_success')
     @patch('drd.metadata.updater.print_warning')
     @patch('drd.metadata.updater.print_error')
-    def test_update_metadata_with_dravid(self, mock_print_error, mock_print_warning,
+    @patch('drd.metadata.updater.asyncio.run')
+    def test_update_metadata_with_dravid(self, mock_asyncio_run, mock_print_error, mock_print_warning,
                                          mock_print_success, mock_print_info,
                                          mock_find_file, mock_extract_xml, mock_call_api,
                                          mock_get_folder_structure, mock_get_ignore_patterns,
@@ -48,11 +49,11 @@ class TestMetadataUpdater(unittest.TestCase):
         <response>
             <files>
                 <file>
-                    <path>/fake/project/dir/src/main.py</path>
+                    <path>src/main.py</path>
                     <action>update</action>
                     <metadata>
                         <type>python</type>
-                        <description>Main Python file</description>
+                        <summary>Main Python file</summary>
                         <exports>main_function</exports>
                         <imports>os</imports>
                         <external_dependencies>
@@ -61,15 +62,15 @@ class TestMetadataUpdater(unittest.TestCase):
                     </metadata>
                 </file>
                 <file>
-                    <path>/fake/project/dir/README.md</path>
+                    <path>README.md</path>
                     <action>remove</action>
                 </file>
                 <file>
-                    <path>/fake/project/dir/package.json</path>
+                    <path>package.json</path>
                     <action>update</action>
                     <metadata>
                         <type>json</type>
-                        <description>Package configuration file</description>
+                        <summary>Package configuration file</summary>
                         <exports>None</exports>
                         <imports>None</imports>
                         <external_dependencies>
@@ -97,6 +98,17 @@ class TestMetadataUpdater(unittest.TestCase):
             return mock_open(read_data=mock_file_contents.get(filename, ""))()
 
         with patch('builtins.open', mock_open_file):
+            # Mock analyze_file to return the expected file_info
+            mock_analyze_file = MagicMock()
+            mock_analyze_file.return_value = {
+                'path': '/fake/project/dir/src/main.py',
+                'type': 'python',
+                'summary': 'Main Python file',
+                'exports': ['main_function'],
+                'imports': ['os']
+            }
+            mock_metadata_manager.return_value.analyze_file = mock_analyze_file
+
             # Call the function
             update_metadata_with_dravid(
                 self.meta_description, self.current_dir)
@@ -110,15 +122,13 @@ class TestMetadataUpdater(unittest.TestCase):
 
         # Check if metadata was correctly updated and removed
         mock_metadata_manager.return_value.update_file_metadata.assert_any_call(
-            '/fake/project/dir/src/main.py', 'python', "print('Hello, World!')", 'Main Python file', [
-                'main_function'], ['os']
+            '/fake/project/dir/src/main.py', 'python', 'Main Python file', ['main_function'], ['os']
         )
         mock_metadata_manager.return_value.update_file_metadata.assert_any_call(
-            '/fake/project/dir/package.json', 'json', '{"name": "test-project"}', 'Package configuration file', [
-            ], []
+            '/fake/project/dir/package.json', 'json', 'Package configuration file', [], []
         )
         mock_metadata_manager.return_value.remove_file_metadata.assert_called_once_with(
-            '/fake/project/dir/README.md')
+            'README.md')
 
         # Check if external dependencies were added
         mock_metadata_manager.return_value.add_external_dependency.assert_any_call(
@@ -136,7 +146,7 @@ class TestMetadataUpdater(unittest.TestCase):
         mock_print_success.assert_any_call(
             "Updated metadata for file: /fake/project/dir/package.json")
         mock_print_success.assert_any_call(
-            "Removed metadata for file: /fake/project/dir/README.md")
+            "Removed metadata for file: README.md")
         mock_print_success.assert_any_call("Metadata update completed.")
 
 
