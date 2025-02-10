@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock, mock_open
 import xml.etree.ElementTree as ET
+import asyncio
 
 from drd.metadata.updater import update_metadata_with_dravid
 
@@ -98,24 +99,26 @@ class TestMetadataUpdater(unittest.TestCase):
 
         with patch('builtins.open', mock_open_file):
             # Mock analyze_file to return the expected file_info
-            mock_analyze_file = MagicMock()
-            mock_analyze_file.side_effect = [
-                {
-                    'path': '/fake/project/dir/src/main.py',
-                    'type': 'python',
-                    'summary': 'Main Python file',
-                    'exports': ['main_function'],
-                    'imports': ['os']
-                },
-                {
-                    'path': '/fake/project/dir/package.json',
-                    'type': 'json',
-                    'summary': 'Package configuration file',
-                    'exports': [],
-                    'imports': []
-                }
-            ]
-            mock_metadata_manager.return_value.analyze_file = mock_analyze_file
+            async def mock_analyze_file(path):
+                if path == '/fake/project/dir/src/main.py':
+                    return {
+                        'path': '/fake/project/dir/src/main.py',
+                        'type': 'python',
+                        'summary': mock_file_contents['/fake/project/dir/src/main.py'],
+                        'exports': ['main_function'],
+                        'imports': ['os']
+                    }
+                elif path == '/fake/project/dir/package.json':
+                    return {
+                        'path': '/fake/project/dir/package.json',
+                        'type': 'json',
+                        'summary': mock_file_contents['/fake/project/dir/package.json'],
+                        'exports': [],
+                        'imports': []
+                    }
+                return None
+
+            mock_metadata_manager.return_value.analyze_file = MagicMock(side_effect=mock_analyze_file)
 
             # Call the function
             update_metadata_with_dravid(
@@ -130,10 +133,10 @@ class TestMetadataUpdater(unittest.TestCase):
 
         # Check if metadata was correctly updated and removed
         mock_metadata_manager.return_value.update_file_metadata.assert_any_call(
-            '/fake/project/dir/src/main.py', 'python', 'Main Python file', ['main_function'], ['os']
+            '/fake/project/dir/src/main.py', 'python', mock_file_contents['/fake/project/dir/src/main.py'], ['main_function'], ['os']
         )
         mock_metadata_manager.return_value.update_file_metadata.assert_any_call(
-            '/fake/project/dir/package.json', 'json', 'Package configuration file', [], []
+            '/fake/project/dir/package.json', 'json', mock_file_contents['/fake/project/dir/package.json'], [], []
         )
         mock_metadata_manager.return_value.remove_file_metadata.assert_called_once_with(
             'README.md')
