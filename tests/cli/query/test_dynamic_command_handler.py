@@ -56,6 +56,8 @@ class TestDynamicCommandHandler(unittest.TestCase):
         self.assertEqual(output, "Hello")
         self.executor.execute_shell_command.assert_called_once_with(
             'echo "Hello"')
+        mock_print_info.assert_called_once_with(
+            'Executing shell command: echo "Hello"')
         mock_print_success.assert_called_once_with(
             'Successfully executed: echo "Hello"')
         mock_echo.assert_called_once_with('Command output:\nHello')
@@ -114,7 +116,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
         mock_call_api.assert_called_once()
         mock_execute_commands.assert_called_once()
         mock_print_success.assert_called_with(
-            "All fix steps successfully applied.")
+            "🛠️ All fix steps successfully applied. 🛠️")
 
     @patch('drd.cli.query.dynamic_command_handler.print_info')
     @patch('drd.cli.query.dynamic_command_handler.print_success')
@@ -128,6 +130,8 @@ class TestDynamicCommandHandler(unittest.TestCase):
         self.assertEqual(output, "Skipping this step...")
         self.executor.execute_shell_command.assert_called_once_with(
             'echo "Hello"')
+        mock_print_info.assert_any_call(
+            'Executing shell command: echo "Hello"')
         mock_print_info.assert_any_call("Skipping this step...")
         mock_print_success.assert_not_called()
         mock_echo.assert_not_called()
@@ -135,7 +139,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
     @patch('drd.cli.query.dynamic_command_handler.print_step')
     @patch('drd.cli.query.dynamic_command_handler.print_info')
     @patch('drd.cli.query.dynamic_command_handler.print_debug')
-    def test_execute_commands(self, mock_print_debug, mock_print_info, mock_print_step):
+    def test_execute_commands_with_debug(self, mock_print_debug, mock_print_info, mock_print_step):
         commands = [
             {'type': 'explanation', 'content': 'Test explanation'},
             {'type': 'shell', 'command': 'echo "Hello"'},
@@ -155,7 +159,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
         self.assertIsNone(error)
         self.assertIn("Explanation - Test explanation", output)
         self.assertIn("Shell command - echo \"Hello\"", output)
-        self.assertIn("File command -  CREATE", output)
+        self.assertIn("File command - CREATE - test.txt", output)
         mock_print_debug.assert_has_calls([
             call("Completed step 1/3"),
             call("Completed step 2/3"),
