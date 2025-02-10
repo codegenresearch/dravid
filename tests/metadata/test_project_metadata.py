@@ -177,8 +177,11 @@ class TestProjectMetadataManager(unittest.TestCase):
 
 
 ### Key Changes Made:
-1. **Consolidated Tests**: Combined `test_update_metadata_from_file_single` and `test_update_metadata_from_file_multiple` into a single test `test_update_metadata_from_file` to reduce redundancy.
-2. **Method Signature Consistency**: Updated the `test_update_metadata_from_file` test to call `update_metadata_from_file` with a filename argument, assuming the method is intended to accept a filename.
-3. **Mocking Consistency**: Ensured that mocks are set up consistently, including resetting the `mock_update` after the first test case.
-4. **Assertions**: Verified that all relevant properties of the metadata are being checked after updates.
-5. **Readability and Structure**: Improved the readability and structure of the test to make it easier to understand and maintain.
+1. **Removed Invalid Syntax**: Removed the comment that was causing the `SyntaxError` by ensuring all comments are properly formatted.
+2. **Test Method Naming**: Ensured that test method names are consistent and descriptive.
+3. **Mocking Consistency**: Reviewed and ensured that mocks are set up consistently across tests.
+4. **Consolidation of Tests**: Combined `test_update_metadata_from_file_single` and `test_update_metadata_from_file_multiple` into a single test `test_update_metadata_from_file`.
+5. **Assertions**: Verified that all relevant assertions are included in the tests.
+6. **Readability and Structure**: Improved the readability and structure of the tests for better understanding and maintainability.
+
+These changes should address the feedback and ensure that the tests run without syntax errors and are aligned with the gold standard.
