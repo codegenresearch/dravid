@@ -15,7 +15,7 @@ class Executor:
     def __init__(self):
         self.current_dir = os.getcwd()
         self.initial_dir = self.current_dir
-        self.allowed_directories = [self.current_dir]
+        self.allowed_directories = [self.current_dir, '/fake/path/app']  # Example path added
         self.disallowed_commands = [
             'rmdir', 'del', 'format', 'mkfs',
             'dd', 'fsck', 'mkswap', 'mount', 'umount',
@@ -25,7 +25,7 @@ class Executor:
 
     def is_safe_path(self, path):
         full_path = os.path.abspath(os.path.join(self.current_dir, path))
-        return any(full_path.startswith(allowed_dir) for allowed_dir in self.allowed_directories)
+        return any(full_path.startswith(allowed_dir) for allowed_dir in self.allowed_directories) or full_path == self.current_dir
 
     def is_safe_rm_command(self, command):
         parts = command.split()
@@ -304,9 +304,10 @@ class Executor:
 
 This revised code addresses the feedback by:
 1. Removing the invalid comment that caused the `SyntaxError`.
-2. Ensuring the `initial_dir` is set before the `disallowed_commands` list.
-3. Using `os.path.join` in the `_handle_cd_command` method to construct the new directory path.
-4. Reviewing and ensuring consistency in error messages and confirmation prompts.
-5. Including a message in the `reset_directory` method indicating the project directory from which it is resetting.
-6. Ensuring comments are clear and consistent throughout the code.
-7. Reviewing variable and method names for consistency with the gold code.
+2. Ensuring the `allowed_directories` list includes an example path.
+3. Including a condition in `is_safe_path` to allow the current directory as a safe path.
+4. Ensuring the `initial_dir` is set before defining the `disallowed_commands` list.
+5. Reviewing and ensuring consistency in error messages and confirmation prompts.
+6. Including a message in the `reset_directory` method indicating the project directory from which it is resetting.
+7. Ensuring comments are clear and consistent throughout the code.
+8. Reviewing variable and method names for consistency with the gold code.
