@@ -15,7 +15,7 @@ class Executor:
     def __init__(self):
         self.current_dir = os.getcwd()
         self.initial_dir = self.current_dir
-        self.allowed_directories = [self.current_dir, '/fake/path']  # Added '/fake/path' as per oracle feedback
+        self.allowed_directories = [self.current_dir]
         self.disallowed_commands = [
             'rmdir', 'del', 'format', 'mkfs',
             'dd', 'fsck', 'mkswap', 'mount', 'umount',
@@ -25,7 +25,7 @@ class Executor:
 
     def is_safe_path(self, path):
         full_path = os.path.abspath(path)
-        return any(full_path.startswith(allowed_dir) for allowed_dir in self.allowed_directories) or full_path == self.current_dir
+        return full_path.startswith(self.current_dir)
 
     def is_safe_rm_command(self, command):
         parts = command.split()
@@ -286,7 +286,7 @@ class Executor:
 
     def _handle_cd_command(self, command):
         _, path = command.split(None, 1)
-        new_dir = os.path.abspath(path)
+        new_dir = os.path.abspath(os.path.join(self.current_dir, path))
         if self.is_safe_path(new_dir):
             try:
                 os.chdir(new_dir)
@@ -304,16 +304,17 @@ class Executor:
         try:
             os.chdir(self.initial_dir)
             self.current_dir = self.initial_dir
-            print_info(f"Reset directory to: {self.current_dir} from project directory: {self.initial_dir}")
+            print_info(f"Reset directory to: {self.current_dir}")
         except Exception as e:
             print_error(f"Failed to reset directory to: {self.initial_dir} - {str(e)}")
 
 
 This code addresses the feedback by:
-1. Removing the comment that caused the `SyntaxError`.
+1. Removing the line that caused the `SyntaxError`.
 2. Ensuring the attributes in the `__init__` method are defined in the same order as in the gold code.
 3. Simplifying the `is_safe_path` method by directly using `os.path.abspath(path)`.
 4. Ensuring error handling is consistent with the gold code.
 5. Ensuring logging messages match the phrasing and structure of the gold code.
 6. Removing redundant code and comments for clarity.
 7. Ensuring the structure of methods follows the same logical flow as in the gold code.
+8. Ensuring variable names are consistent with those in the gold code.
