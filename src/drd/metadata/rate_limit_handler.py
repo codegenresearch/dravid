@@ -50,41 +50,23 @@ async def process_single_file(filename, content, project_context, folder_structu
             response = await to_thread(call_dravid_api_with_pagination, metadata_query, include_context=True)
 
         root = extract_and_parse_xml(response)
-        metadata = root.find('.//metadata')
-        if metadata is None:
-            raise ValueError("Metadata section not found in the response")
-
-        type_elem = metadata.find('type')
-        desc_elem = metadata.find('description')
-        exports_elem = metadata.find('exports')
-        imports_elem = metadata.find('imports')
-        external_deps_elem = metadata.find('external_dependencies')
+        type_elem = root.find('.//type')
+        summary_elem = root.find('.//summary')
+        exports_elem = root.find('.//exports')
+        imports_elem = root.find('.//imports')
+        external_deps_elem = root.find('.//external_dependencies')
 
         file_type = type_elem.text.strip() if type_elem is not None and type_elem.text else "unknown"
-        description = desc_elem.text.strip() if desc_elem is not None and desc_elem.text else "No description available"
+        summary = summary_elem.text.strip() if summary_elem is not None and summary_elem.text else "No description available"
         exports = exports_elem.text.strip() if exports_elem is not None and exports_elem.text else ""
         imports = imports_elem.text.strip() if imports_elem is not None and imports_elem.text else ""
         external_dependencies = [dep.text.strip() for dep in external_deps_elem.findall('dependency')] if external_deps_elem is not None else []
 
         print_success(f"Processed: {filename}")
-        return {
-            'filename': filename,
-            'type': file_type,
-            'description': description,
-            'exports': exports,
-            'imports': imports,
-            'external_dependencies': external_dependencies
-        }
+        return filename, file_type, summary, exports, imports, external_dependencies
     except Exception as e:
         print_error(f"Error processing {filename}: {e}")
-        return {
-            'filename': filename,
-            'type': "unknown",
-            'description': f"Error: {e}",
-            'exports': "",
-            'imports': "",
-            'external_dependencies': []
-        }
+        return filename, "unknown", "No description available", "", "", []
 
 
 async def process_files(files, project_context, folder_structure):
