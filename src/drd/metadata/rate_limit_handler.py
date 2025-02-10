@@ -93,7 +93,6 @@ async def process_files(files, project_context, folder_structure):
     return results
 
 
-# Removed incorrectly formatted comment that was causing a SyntaxError.
 # Ensured that the error message in the `except` block includes the "Error:" prefix.
 # Ensured that the return tuple includes an empty string for `imports` in the error case.
 # Reviewed and adjusted the formatting for better readability, including consistent spacing and line breaks.
