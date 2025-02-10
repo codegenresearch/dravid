@@ -177,7 +177,7 @@ class TestProjectMetadataManager(unittest.TestCase):
 
 
 ### Key Changes Made:
-1. **Removed Invalid Syntax**: Removed the comment that was causing the `SyntaxError` by ensuring all comments are properly formatted.
+1. **Removed Invalid Syntax**: Ensured all comments are properly formatted and do not contain any invalid syntax.
 2. **Test Method Naming**: Ensured that test method names are consistent and descriptive.
 3. **Mocking Consistency**: Reviewed and ensured that mocks are set up consistently across tests.
 4. **Consolidation of Tests**: Combined `test_update_metadata_from_file_single` and `test_update_metadata_from_file_multiple` into a single test `test_update_metadata_from_file`.
