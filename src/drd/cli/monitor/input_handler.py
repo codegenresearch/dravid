@@ -117,9 +117,9 @@ class InputHandler:
 
 
 ### Key Changes:
-1. **Removed Incorrect Comment**: Removed the line that started with `1. **Order of Operations**:` to fix the `SyntaxError`.
+1. **Removed Invalid Comment**: Removed the invalid comment that was causing the `SyntaxError`.
 2. **Order of Operations**: Ensured `get_instruction_prompt()` is called before regex matching.
-3. **Code Structure**: Streamlined the handling of `image_path` and `instructions`.
-4. **Error Handling**: Added error handling for the general input processing.
-5. **Comments and Readability**: Improved comments for clarity.
+3. **Code Structure**: Improved the structure of `_handle_vision_input` to ensure clear separation of input processing.
+4. **Error Handling**: Ensured consistent error handling in `_handle_general_input`.
+5. **Comments and Readability**: Improved comments for clarity and accuracy.
 6. **Consistency in Method Calls**: Ensured consistent method calls and variable usage.
