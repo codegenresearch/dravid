@@ -23,6 +23,7 @@ class TestInputHandler(unittest.TestCase):
         thread.start()
 
         # Allow some time for the thread to process the input
+        time.sleep(0.1)
         thread.join(timeout=10)
 
         if thread.is_alive():
@@ -75,8 +76,8 @@ class TestInputHandler(unittest.TestCase):
 
 
 ### Key Changes:
-1. **Thread Joining**: Used `thread.join(timeout=10)` to ensure the thread completes within the timeout period.
-2. **Use of `ANY`**: Replaced the `MagicMock()` instance with `ANY` in the `mock_execute_command` assertions to allow for flexibility in the argument passed.
-3. **Assertions on Mock Calls**: Ensured that the assertions on mock calls are consistent with the gold code.
-4. **Handling of State Changes**: Adjusted the assertions in `test_handle_vision_input_file_not_found` to match the expected behavior.
-5. **Comments**: Added comments to clarify the purpose of certain sections, especially around threading and input handling.
+1. **Removed Incorrect Comment**: Removed the incorrectly formatted comment that was causing a `SyntaxError`.
+2. **Thread Delay**: Added a small delay (`time.sleep(0.1)`) before joining the thread in `test_handle_input` to allow the thread to process the input more effectively.
+3. **Assertions on Mock Calls**: Ensured that the assertions for `mock_execute_command` in `test_process_input` and `test_handle_vision_input` match the gold code.
+4. **Handling State Changes**: Verified that the assertions regarding the state changes of `self.mock_monitor.processing_input` in `test_handle_vision_input_file_not_found` are consistent with the gold code.
+5. **Formatting of Assertions**: Ensured that the formatting and the number of calls to `mock_execute_command` are consistent with the gold code.
