@@ -15,7 +15,7 @@ class Executor:
     def __init__(self):
         self.current_dir = os.getcwd()
         self.initial_dir = self.current_dir
-        self.allowed_directories = [self.current_dir]  # Only include the current directory
+        self.allowed_directories = [self.current_dir, '/path/to/another/safe/directory']  # Add relevant paths
         self.disallowed_commands = [
             'rmdir', 'del', 'format', 'mkfs',
             'dd', 'fsck', 'mkswap', 'mount', 'umount',
@@ -305,7 +305,7 @@ class Executor:
 This revised code addresses the feedback by:
 1. Removing the invalid comment that caused the `SyntaxError`.
 2. Ensuring the `initial_dir` is set before defining the `disallowed_commands` list.
-3. Ensuring the `allowed_directories` list only includes the current directory.
+3. Including additional relevant paths in the `allowed_directories` list.
 4. Ensuring the `is_safe_path` method correctly checks against the allowed directories.
 5. Reviewing and ensuring consistency in error messages and confirmation prompts.
 6. Including a message in the `reset_directory` method indicating the project directory from which it is resetting.
