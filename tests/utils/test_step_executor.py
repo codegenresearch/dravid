@@ -13,13 +13,10 @@ from drd.utils.apply_file_changes import apply_changes
 class TestExecutor(unittest.TestCase):
 
     def setUp(self):
-        self.initial_dir = '/specific/directory'
         self.executor = Executor()
-        self.executor.current_dir = self.initial_dir
-        self.executor.allowed_directories = [self.initial_dir, '/fake/path']
 
     def test_is_safe_path(self):
-        self.assertTrue(self.executor.is_safe_path(os.path.join(self.initial_dir, 'test.txt')))
+        self.assertTrue(self.executor.is_safe_path(os.path.join(self.executor.current_dir, 'test.txt')))
         self.assertFalse(self.executor.is_safe_path('/etc/passwd'))
 
     def test_is_safe_rm_command(self):
@@ -28,7 +25,7 @@ class TestExecutor(unittest.TestCase):
         # Test with a file that exists in the current directory
         with patch('os.path.isfile', return_value=True):
             self.assertTrue(self.executor.is_safe_rm_command(
-                f'rm {os.path.join(self.initial_dir, "existing_file.txt")}'))
+                f'rm {os.path.join(self.executor.current_dir, "existing_file.txt")}'))
         self.assertFalse(self.executor.is_safe_rm_command('rm -rf /'))
         self.assertFalse(self.executor.is_safe_rm_command('rm -f test.txt'))
 
@@ -38,7 +35,9 @@ class TestExecutor(unittest.TestCase):
 
     @patch('os.path.exists')
     @patch('builtins.open', new_callable=mock_open)
-    def test_perform_file_operation_create(self, mock_file, mock_exists):
+    @patch('os.makedirs')
+    @patch('click.confirm', return_value=True)
+    def test_perform_file_operation_create(self, mock_confirm, mock_makedirs, mock_file, mock_exists):
         mock_exists.return_value = False
         result = self.executor.perform_file_operation(
             'CREATE', 'test.txt', 'content')
@@ -46,17 +45,57 @@ class TestExecutor(unittest.TestCase):
         mock_file.assert_called_with(os.path.join(
             self.executor.current_dir, 'test.txt'), 'w')
         mock_file().write.assert_called_with('content')
+        mock_confirm.assert_called_once()
 
     @patch('os.path.exists')
     @patch('os.path.isfile')
     @patch('os.remove')
-    def test_perform_file_operation_delete(self, mock_remove, mock_isfile, mock_exists):
+    @patch('click.confirm', return_value=True)
+    def test_perform_file_operation_delete(self, mock_confirm, mock_remove, mock_isfile, mock_exists):
         mock_exists.return_value = True
         mock_isfile.return_value = True
         result = self.executor.perform_file_operation('DELETE', 'test.txt')
         self.assertTrue(result)
         mock_remove.assert_called_with(os.path.join(
             self.executor.current_dir, 'test.txt'))
+        mock_confirm.assert_called_once()
+
+    @patch('os.path.exists')
+    @patch('builtins.open', new_callable=mock_open, read_data="original content")
+    @patch('click.confirm', return_value=True)
+    @patch('drd.utils.step_executor.preview_file_changes')
+    def test_perform_file_operation_update(self, mock_preview, mock_confirm, mock_file, mock_exists):
+        mock_exists.return_value = True
+        mock_confirm.return_value = True
+        mock_preview.return_value = "Preview of changes"
+
+        # Define the changes to be applied
+        changes = "+ 2: This is a new line\nr 1: This is a replaced line"
+
+        result = self.executor.perform_file_operation(
+            'UPDATE', 'test.txt', changes)
+
+        self.assertTrue(result)
+        mock_file.assert_any_call(os.path.join(
+            self.executor.current_dir, 'test.txt'), 'r')
+        mock_file.assert_any_call(os.path.join(
+            self.executor.current_dir, 'test.txt'), 'w')
+
+        # Calculate the expected updated content
+        expected_updated_content = apply_changes("original content", changes)
+
+        mock_preview.assert_called_once_with(
+            'UPDATE', 'test.txt', new_content=expected_updated_content, original_content="original content")
+        mock_file().write.assert_called_once_with(expected_updated_content)
+        mock_confirm.assert_called_once()
+
+    @patch('click.confirm', return_value=False)
+    def test_perform_file_operation_user_cancel(self, mock_confirm):
+        mock_confirm.return_value = False
+        result = self.executor.perform_file_operation(
+            'UPDATE', 'test.txt', 'content')
+        self.assertFalse(result)
+        mock_confirm.assert_called_once()
 
     def test_parse_json(self):
         valid_json = '{"key": "value"}'
@@ -83,7 +122,8 @@ class TestExecutor(unittest.TestCase):
         self.assertEqual(result, {'folder': {'file.txt': 'file'}})
 
     @patch('subprocess.Popen')
-    def test_execute_shell_command(self, mock_popen):
+    @patch('click.confirm', return_value=True)
+    def test_execute_shell_command(self, mock_confirm, mock_popen):
         mock_process = MagicMock()
         mock_process.poll.side_effect = [None, 0]
         mock_process.stdout.readline.return_value = 'output line'
@@ -92,9 +132,30 @@ class TestExecutor(unittest.TestCase):
 
         result = self.executor.execute_shell_command('ls')
         self.assertEqual(result, 'output line')
+        mock_confirm.assert_called_once()
+
+    @patch('click.confirm', return_value=False)
+    def test_execute_shell_command_user_cancel(self, mock_confirm):
+        mock_confirm.return_value = False
+        result = self.executor.execute_shell_command('ls')
+        mock_confirm.assert_called_once()
+
+    @patch('subprocess.Popen')
+    @patch('click.confirm', return_value=True)
+    def test_execute_single_command(self, mock_confirm, mock_popen):
+        mock_process = MagicMock()
+        mock_process.poll.side_effect = [None, 0]
+        mock_process.stdout.readline.return_value = 'output line'
+        mock_process.communicate.return_value = ('', '')
+        mock_popen.return_value = mock_process
+
+        result = self.executor._execute_single_command('echo "Hello"', timeout=300)
+        self.assertEqual(result, 'output line')
+        mock_confirm.assert_called_once()
 
     @patch('subprocess.run')
-    def test_handle_source_command(self, mock_run):
+    @patch('click.confirm', return_value=True)
+    def test_handle_source_command(self, mock_confirm, mock_run):
         mock_run.return_value = subprocess.CompletedProcess(
             args=['source', 'test.sh'],
             returncode=0,
@@ -105,6 +166,7 @@ class TestExecutor(unittest.TestCase):
             result = self.executor._handle_source_command('source test.sh')
         self.assertEqual(result, "Source command executed successfully")
         self.assertEqual(self.executor.env['KEY'], 'value')
+        mock_confirm.assert_called_once()
 
     def test_update_env_from_command(self):
         # Test simple assignment
@@ -131,84 +193,34 @@ class TestExecutor(unittest.TestCase):
             self.executor.env['EXPORT_QUOTE'], 'exported quoted value')
 
     @patch('os.path.exists')
-    @patch('builtins.open', new_callable=mock_open)
-    @patch('click.confirm')
-    def test_perform_file_operation_create(self, mock_confirm, mock_file, mock_exists):
-        mock_exists.return_value = False
-        mock_confirm.return_value = True
-        result = self.executor.perform_file_operation(
-            'CREATE', 'test.txt', 'content')
-        self.assertTrue(result)
-        mock_file.assert_called_with(os.path.join(
-            self.executor.current_dir, 'test.txt'), 'w')
-        mock_file().write.assert_called_with('content')
+    @patch('os.path.isdir')
+    @patch('click.confirm', return_value=True)
+    def test_handle_cd_command(self, mock_confirm, mock_isdir, mock_exists):
+        mock_exists.return_value = True
+        mock_isdir.return_value = True
+        new_dir = os.path.join(self.executor.current_dir, 'new_folder')
+        result = self.executor._handle_cd_command(f'cd {new_dir}')
+        self.assertEqual(result, f"Changed directory to: {new_dir}")
+        self.assertEqual(self.executor.current_dir, new_dir)
         mock_confirm.assert_called_once()
 
     @patch('os.path.exists')
-    @patch('builtins.open', new_callable=mock_open, read_data="original content")
-    @patch('click.confirm')
-    @patch('drd.utils.step_executor.preview_file_changes')
-    def test_perform_file_operation_update(self, mock_preview, mock_confirm, mock_file, mock_exists):
+    @patch('os.path.isdir')
+    @patch('click.confirm', return_value=False)
+    def test_handle_cd_command_user_cancel(self, mock_confirm, mock_isdir, mock_exists):
         mock_exists.return_value = True
-        mock_confirm.return_value = True
-        mock_preview.return_value = "Preview of changes"
-
-        # Define the changes to be applied
-        changes = "+ 2: This is a new line\nr 1: This is a replaced line"
-
-        result = self.executor.perform_file_operation(
-            'UPDATE', 'test.txt', changes)
-
-        self.assertTrue(result)
-        mock_file.assert_any_call(os.path.join(
-            self.executor.current_dir, 'test.txt'), 'r')
-        mock_file.assert_any_call(os.path.join(
-            self.executor.current_dir, 'test.txt'), 'w')
-
-        # Calculate the expected updated content
-        expected_updated_content = apply_changes("original content", changes)
-
-        mock_preview.assert_called_once_with(
-            'UPDATE', 'test.txt', new_content=expected_updated_content, original_content="original content")
-        mock_file().write.assert_called_once_with(expected_updated_content)
-
-    @patch('os.path.exists')
-    @patch('os.path.isfile')
-    @patch('os.remove')
-    @patch('click.confirm')
-    def test_perform_file_operation_delete(self, mock_confirm, mock_remove, mock_isfile, mock_exists):
-        mock_exists.return_value = True
-        mock_isfile.return_value = True
-        mock_confirm.return_value = True
-        result = self.executor.perform_file_operation('DELETE', 'test.txt')
-        self.assertTrue(result)
-        mock_remove.assert_called_with(os.path.join(
-            self.executor.current_dir, 'test.txt'))
+        mock_isdir.return_value = True
+        new_dir = os.path.join(self.executor.current_dir, 'new_folder')
+        result = self.executor._handle_cd_command(f'cd {new_dir}')
+        self.assertEqual(result, f"Failed to change directory to: {new_dir}")
+        self.assertNotEqual(self.executor.current_dir, new_dir)
         mock_confirm.assert_called_once()
 
-    @patch('click.confirm')
-    def test_perform_file_operation_user_cancel(self, mock_confirm):
-        mock_confirm.return_value = False
-        result = self.executor.perform_file_operation(
-            'UPDATE', 'test.txt', 'content')
-        self.assertFalse(result)
 
-    @patch('subprocess.Popen')
-    @patch('click.confirm')
-    def test_execute_shell_command(self, mock_confirm, mock_popen):
-        mock_confirm.return_value = True
-        mock_process = MagicMock()
-        mock_process.poll.side_effect = [None, 0]
-        mock_process.stdout.readline.return_value = 'output line'
-        mock_process.communicate.return_value = ('', '')
-        mock_popen.return_value = mock_process
-
-        result = self.executor.execute_shell_command('ls')
-        self.assertEqual(result, 'output line')
-        mock_confirm.assert_called_once()
-
-    @patch('click.confirm')
-    def test_execute_shell_command_user_cancel(self, mock_confirm):
-        mock_confirm.return_value = False
-        result = self.executor.execute_shell_command('ls')
-        mock_confirm.assert_called_once()
+This code addresses the feedback by:
+1. Removing the explicit setting of `current_dir` in the `setUp` method.
+2. Ensuring each test is unique and serves a distinct purpose.
+3. Consistently using `mock_confirm` where user interaction is expected.
+4. Adding tests for changing directories to ensure that this behavior is covered.
+5. Ensuring that assertions are consistent with the expected outcomes.
+6. Adding tests for executing single commands and handling specific shell commands like `echo`.
