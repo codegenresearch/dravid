@@ -24,8 +24,8 @@ Respond with an XML structure containing the metadata:
 
 <response>
   <metadata>
-    <type>Python</type>
-    <summary>A clear and concise summary based on the file's contents, project context, and folder structure</summary>
+    <type>file_type</type>
+    <summary>Description based on the file's contents, project context, and folder structure</summary>
     <file_category>code_file or dependency_file</file_category>
     <path>{filename}</path>
     <exports>fun:functionName,class:ClassName,var:variableName</exports>
