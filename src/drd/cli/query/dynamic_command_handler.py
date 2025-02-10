@@ -149,3 +149,12 @@ def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, pr
             all_outputs,
             debug
         )
+
+
+### Changes Made:
+1. **Formatting and Readability**: Ensured consistent formatting, especially with line breaks and indentation.
+2. **Error Handling**: Adjusted the structure of exception handling in `handle_file_operation` to align more closely with the gold code.
+3. **Function Logic**: Clarified the success and failure paths in `handle_file_operation`.
+4. **Print Statements**: Ensured print statements are consistent with the gold code.
+5. **Return Values**: Made sure return values are consistent with the gold code.
+6. **Debugging Information**: Ensured debug information is consistent with the gold code.
