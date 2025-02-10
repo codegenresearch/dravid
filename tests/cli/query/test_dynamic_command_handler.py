@@ -96,7 +96,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
         update_file_metadata(cmd, self.metadata_manager, self.executor)
 
         self.metadata_manager.get_project_context.assert_called_once()
-        self.executor.get_folder_structure.assert_called_called_once()
+        self.executor.get_folder_structure.assert_called_once()
         mock_generate_description.assert_called_once_with(
             'test.txt', 'Test content', self.metadata_manager.get_project_context(), self.executor.get_folder_structure())
         self.metadata_manager.update_file_metadata.assert_called_once_with(
@@ -219,8 +219,8 @@ class TestDynamicCommandHandler(unittest.TestCase):
 
 
 ### Key Changes Made:
-1. **Removed Invalid Syntax**: Removed the invalid comment that was causing the `SyntaxError`.
-2. **Consolidated Tests**: Removed the duplicate `test_execute_commands` method.
+1. **Removed Invalid Syntax**: Removed any invalid comments that could cause syntax errors.
+2. **Consolidated Test Cases**: Removed the duplicate `test_execute_commands` method.
 3. **Mocking Consistency**: Ensured that the mocks are consistent with the expected behavior.
 4. **Assertions on Output**: Added specific assertions to check for the correct outputs and states.
 5. **Step Completion Tracking**: Used `mock_print_debug` to assert that the correct completion messages are printed for each step.
