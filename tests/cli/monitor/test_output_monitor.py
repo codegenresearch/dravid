@@ -35,7 +35,12 @@ class TestOutputMonitor(unittest.TestCase):
         # Restore stdout
         sys.stdout = sys.__stdout__
 
+        # Print captured output
+        print("Captured output:")
+        print(captured_output.getvalue())
+
         # Assert
+        mock_print_prompt.assert_called_once_with("> ", end="", flush=True)
         expected_info_calls = [
             call("\nNo more tasks to auto-process. What can I do next?"),
             call("\nAvailable actions:"),
@@ -45,7 +50,6 @@ class TestOutputMonitor(unittest.TestCase):
             call("\nType your choice or command:")
         ]
         mock_print_info.assert_has_calls(expected_info_calls, any_order=True)
-        mock_print_prompt.assert_called_once_with("> ", end="", flush=True)
 
     def test_check_for_errors(self):
         # Setup
