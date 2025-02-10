@@ -55,8 +55,9 @@ class TestRateLimitHandler(unittest.IsolatedAsyncioTestCase):
 
         result = await process_single_file("test.py", "print('Hello')", "Test project", {"test.py": "file"})
 
+        # Ensure the result matches the expected structure and values
         self.assertEqual(result, ("test.py", "python", "A test file", "test_function", "os,sys"))
-        mock_call_api.assert_called_once()
+        mock_call_api.assert_called_once_with("<response><type>python</type><summary>A test file</summary><exports>test_function</exports><imports>os,sys</imports></response>", include_context=True)
         mock_extract_xml.assert_called_once_with(mock_call_api.return_value)
 
     @patch('drd.metadata.rate_limit_handler.call_dravid_api_with_pagination')
@@ -66,11 +67,10 @@ class TestRateLimitHandler(unittest.IsolatedAsyncioTestCase):
 
         result = await process_single_file("test.py", "print('Hello')", "Test project", {"test.py": "file"})
 
-        self.assertEqual(result[0], "test.py")
-        self.assertEqual(result[1], "unknown")
-        self.assertTrue(result[2].startswith("Error:"))
-        self.assertEqual(result[3], "")
-        self.assertEqual(result[4], "")
+        # Ensure the result matches the expected structure and values in case of error
+        self.assertEqual(result, ("test.py", "unknown", "Error: API Error", "", ""))
+        mock_call_api.assert_called_once_with("<response><type>python</type><summary>A test file</summary><exports>test_function</exports><imports>os,sys</imports></response>", include_context=True)
+        mock_extract_xml.assert_not_called()
 
     @patch('drd.metadata.rate_limit_handler.process_single_file')
     async def test_process_files(self, mock_process_single_file):
@@ -85,6 +85,7 @@ class TestRateLimitHandler(unittest.IsolatedAsyncioTestCase):
 
         results = await process_files(files, project_context, folder_structure)
 
+        # Ensure the results match the expected structure and values
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0], ("file1.py", "python", "File 1", "func1", "os"))
         self.assertEqual(results[1], ("file2.py", "python", "File 2", "func2", "sys"))
@@ -109,3 +110,6 @@ class TestRateLimitHandler(unittest.IsolatedAsyncioTestCase):
         # (2 batches of 10 files, each taking 0.1 seconds)
         # Allow some margin for error
         self.assertLess(end_time - start_time, 0.3)
+
+
+This code snippet addresses the feedback by ensuring consistent formatting, correct return values, and proper assertions. It also maintains clear and consistent logging and comments.
