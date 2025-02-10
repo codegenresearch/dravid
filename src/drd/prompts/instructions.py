@@ -113,12 +113,16 @@ def get_instruction_prompt():
 
 
 ### Key Changes:
-1. **Explanation**: Made the explanation more concise and relevant.
+1. **Explanation Section**: Simplified the explanation to focus on essential information.
 2. **XML Structure**: Ensured proper XML formatting with the `<response>` tag encapsulating the entire content.
-3. **Step Order and Types**: Maintained logical step order and types.
+3. **Step Types and Commands**: Made sure commands and operations are clearly defined and follow the guidelines.
 4. **File Operations**: Used relative paths and precise line-by-line modifications for updates.
 5. **Metadata Updates**: Included a step for updating metadata after creating or modifying files.
 6. **Placeholder Files**: Used the naming convention for placeholder files.
 7. **Requires Restart Tag**: Included the `<requires_restart>` tag with the correct value.
-8. **Avoid Redundant Information**: Streamlined the steps to avoid redundancy.
+8. **Avoid Redundancy**: Streamlined the steps to avoid repeating information.
 9. **Follow Guidelines**: Adhered closely to the provided guidelines.
+
+### Additional Fixes:
+- Removed any non-Python syntax lines that were mistakenly included in the function definition.
+- Ensured that the function contains only valid Python code to avoid syntax errors.
