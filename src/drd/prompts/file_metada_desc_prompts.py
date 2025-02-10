@@ -8,19 +8,23 @@ File: {filename}
 Content:
 {content}
 
-You are the project metadata maintainer. Your role is to generate comprehensive and clear metadata for the project files to assist AI coding assistants in future tasks.
+You are the project context maintainer. Your role is to generate comprehensive and clear metadata for the project files to assist AI coding assistants in future tasks.
+
+### Guidelines:
+- **Summary**: Provide a brief summary of the file's purpose.
+- **File Category**: Specify whether the file is a `code_file` or `dependency_file`.
+- **Exports**: List all exports (functions, classes, or variables available for importing). Use the format `fun:functionName,class:ClassName,var:variableName`. If there are no exports, use `None`.
+- **Imports**: List all imports from other project files. Use the format `path/to/file:importedName`. If there are no imports, use `None`.
+- **External Dependencies**: List all external dependencies if the file is a dependency management file (e.g., package.json, requirements.txt, Cargo.toml). Use the format `name@version`. Omit this section if there are no external dependencies.
 
 Based on the file content, project context, and the current folder structure, please provide detailed metadata for this file.
-
-- If this file is a dependency management file (e.g., package.json, requirements.txt, Cargo.toml), list all external dependencies.
-- If it is a code file, include a summary, a list of exports (functions, classes, or variables available for importing), and a list of imports from other project files.
 
 Respond with an XML structure containing the metadata:
 
 <response>
   <metadata>
     <type>{'file_type'}</type>
-    <description>{'A clear and concise description based on the file\'s contents, project context, and folder structure'}</description>
+    <summary>{'A clear and concise summary based on the file\'s contents, project context, and folder structure'}</summary>
     <file_category>{'code_file or dependency_file'}</file_category>
     <exports>{'fun:functionName,class:ClassName,var:variableName' or 'None'}</exports>
     <imports>{'path/to/file:importedName' or 'None'}</imports>
@@ -28,7 +32,7 @@ Respond with an XML structure containing the metadata:
   </metadata>
 </response>
 
-Ensure that all tags (type, description, file_category, exports, imports) are always present and non-empty. If there are no external dependencies, omit the <external_dependencies> tag entirely.
+Ensure that all tags (type, summary, file_category, exports, imports) are always present and non-empty. If there are no external dependencies, omit the <external_dependencies> tag entirely.
 """
     except Exception as e:
         return f"""
