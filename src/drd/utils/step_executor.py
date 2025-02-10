@@ -24,8 +24,8 @@ class Executor:
         self.env = os.environ.copy()
 
     def is_safe_path(self, path):
-        full_path = os.path.abspath(path)
-        return any(full_path.startswith(allowed_dir) for allowed_dir in self.allowed_directories) or full_path == self.current_dir
+        full_path = os.path.abspath(os.path.join(self.current_dir, path))
+        return any(full_path.startswith(allowed_dir) for allowed_dir in self.allowed_directories)
 
     def is_safe_rm_command(self, command):
         parts = command.split()
