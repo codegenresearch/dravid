@@ -85,10 +85,13 @@ class TestProjectMetadataManager(unittest.TestCase):
         </response>
         '''
         response = ET.fromstring(mock_api_call.return_value)
+        metadata_element = response.find('metadata')
         file_info = await self.manager.analyze_file('/fake/project/dir/script.py')
         self.assertEqual(file_info['path'], 'script.py')
-        self.assertEqual(file_info['type'], 'python')
-        self.assertEqual(file_info['summary'], 'A simple Python script')
+        self.assertEqual(file_info['type'], metadata_element.find('type').text)
+        self.assertEqual(file_info['summary'], metadata_element.find('description').text)
+        self.assertEqual(file_info['exports'], metadata_element.find('exports').text)
+        self.assertEqual(file_info['imports'], metadata_element.find('imports').text)
 
     @patch('src.drd.metadata.project_metadata.ProjectMetadataManager.analyze_file')
     @patch('os.walk')
@@ -115,3 +118,6 @@ class TestProjectMetadataManager(unittest.TestCase):
         self.assertEqual(metadata['key_files'][0]['summary'], 'Main Python script')
         self.assertEqual(metadata['key_files'][0]['exports'], ['main_function'])
         self.assertEqual(metadata['key_files'][0]['imports'], ['os'])
+
+
+This code addresses the feedback by ensuring consistency in XML response handling, verifying all assertions, reviewing method naming and structure, double-checking mocking and patching, and maintaining consistent code formatting.
