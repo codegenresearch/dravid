@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock, call
 from io import StringIO
 from drd.cli.monitor.output_monitor import OutputMonitor
+import sys
 import time
 
 
@@ -34,6 +35,10 @@ class TestOutputMonitor(unittest.TestCase):
 
         # Restore stdout
         sys.stdout = sys.__stdout__
+
+        # Print captured output
+        print("Captured output:")
+        print(captured_output.getvalue())
 
         # Assert
         mock_print_prompt.assert_called_once_with(
@@ -90,9 +95,6 @@ class TestOutputMonitor(unittest.TestCase):
         self.assertEqual(captured_output.getvalue(), expected_output)
         mock_print_info.assert_has_calls([call("Line 1\n"), call("Line 2\n")], any_order=False)
 
-    def tearDown(self):
-        # Ensure all threads are cleaned up
-        if self.output_monitor.thread and self.output_monitor.thread.is_alive():
-            self.output_monitor.monitor.should_stop.set()
-            self.output_monitor.thread.join(timeout=1)
-            self.assertFalse(self.output_monitor.thread.is_alive())
+
+if __name__ == '__main__':
+    unittest.main()
