@@ -14,7 +14,7 @@ from ..metadata.common_utils import get_ignore_patterns, get_folder_structure
 class Executor:
     def __init__(self):
         self.current_dir = os.getcwd()
-        self.allowed_directories = [self.current_dir, '/fake/path']
+        self.allowed_directories = [self.current_dir]
         self.initial_dir = self.current_dir
         self.disallowed_commands = [
             'rmdir', 'del', 'format', 'mkfs',
