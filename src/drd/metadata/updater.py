@@ -114,7 +114,7 @@ def update_metadata_with_dravid(meta_description, current_dir):
 
 
 ### Key Changes:
-1. **Syntax Error Fix**: Removed the improperly formatted comment that was causing the `SyntaxError`. Ensured that all comments are properly formatted using `#` for single-line comments or triple quotes for multi-line comments.
+1. **Removed Improperly Formatted Comment**: Removed the improperly formatted comment that was causing the `SyntaxError`. Ensured that all comments are properly formatted using `#` for single-line comments or triple quotes for multi-line comments.
 2. **Error Handling Structure**: Ensured that the `try` block encompasses the parsing of the response and the processing of files, aligning with the gold code's structure.
 3. **External Dependencies Handling**: Adjusted the logic to handle external dependencies by looking for a `metadata` node within each `file` and then checking for `external_dependencies` within that node. This aligns with the structure used in the gold code.
 4. **Consistent Messaging**: Maintained consistent messaging for success, warning, and error messages to match the gold code's style and phrasing.
