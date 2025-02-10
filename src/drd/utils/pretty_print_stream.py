@@ -49,7 +49,7 @@ def pretty_print_xml_stream(chunk, state):
                         if operation_match and filename_match:
                             operation = operation_match.group(1).strip()
                             filename = filename_match.group(1).strip()
-                            click.echo(click.style("\n📁 File Operation:", fg="yellow", bold=True), nl=False)
+                            click.echo(click.style("\n📂 File Operation:", fg="yellow", bold=True), nl=False)
                             click.echo(f" {operation} {filename}")
 
                         # Process CDATA content
@@ -58,7 +58,7 @@ def pretty_print_xml_stream(chunk, state):
                             cdata_end = step_content.rfind("]]>")
                             if cdata_end != -1:
                                 cdata_content = step_content[cdata_start + 9:cdata_end]
-                                click.echo(click.style("\n📜 File Content:", fg="cyan", bold=True))
+                                click.echo(click.style("\n📄 File Content:", fg="cyan", bold=True))
                                 click.echo(cdata_content)
                     elif step_type == 'shell':
                         command_match = re.search(
