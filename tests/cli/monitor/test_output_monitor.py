@@ -29,14 +29,11 @@ class TestOutputMonitor(unittest.TestCase):
         captured_output = StringIO()
         sys.stdout = captured_output
 
-        try:
-            # Run
-            self.output_monitor._monitor_output()
-        except Exception as e:
-            print(f"An error occurred during test: {e}")
-        finally:
-            # Restore stdout
-            sys.stdout = sys.__stdout__
+        # Run
+        self.output_monitor._monitor_output()
+
+        # Restore stdout
+        sys.stdout = sys.__stdout__
 
         # Print captured output
         print("Captured output:")
@@ -61,12 +58,9 @@ class TestOutputMonitor(unittest.TestCase):
             r"Error:": MagicMock()
         }
 
-        try:
-            # Run
-            self.output_monitor._check_for_errors(
-                "Error: Test error\n", error_buffer)
-        except Exception as e:
-            print(f"An error occurred during test: {e}")
+        # Run
+        self.output_monitor._check_for_errors(
+            "Error: Test error\n", error_buffer)
 
         # Assert
         self.mock_monitor.error_handlers[r"Error:"].assert_called_once_with(
