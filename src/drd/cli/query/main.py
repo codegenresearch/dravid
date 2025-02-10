@@ -70,7 +70,8 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt):
             xml_result = stream_dravid_api(
                 full_query, include_context=True, instruction_prompt=instruction_prompt, print_chunk=False)
             commands = parse_dravid_response(xml_result)
-            # return None
+            print_debug("commands")
+            print_info(commands)
             if debug:
                 print_debug(f"Received {len(commands)} new command(s)")
 
@@ -90,17 +91,23 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt):
             print_error(f"Failed to execute command at step {step_completed}.")
             print_error(f"Error message: {error_message}")
             print_info("Attempting to fix the error...")
-            if handle_error_with_dravid(Exception(error_message), commands[step_completed-1], executor, metadata_manager, debug=debug):
-                print_info(
-                    "Fix applied successfully. Continuing with the remaining commands.")
-                # Re-execute the remaining commands
-                remaining_commands = commands[step_completed:]
-                success, _, error_message, additional_outputs = execute_commands(
-                    remaining_commands, executor, metadata_manager, debug=debug)
-                all_outputs += "\n" + additional_outputs
-            else:
-                print_error(
-                    "Unable to fix the error. Skipping this command and continuing with the next.")
+            try:
+                if handle_error_with_dravid(Exception(error_message), commands[step_completed-1], executor, metadata_manager, debug=debug):
+                    print_info(
+                        "Fix applied successfully. Continuing with the remaining commands.")
+                    # Re-execute the remaining commands
+                    remaining_commands = commands[step_completed:]
+                    success, _, error_message, additional_outputs = execute_commands(
+                        remaining_commands, executor, metadata_manager, debug=debug)
+                    all_outputs += "\n" + additional_outputs
+                else:
+                    print_error(
+                        "Unable to fix the error. Skipping this command and continuing with the next.")
+            except Exception as e:
+                print_error(f"An error occurred while handling the error: {str(e)}")
+                if debug:
+                    import traceback
+                    traceback.print_exc()
 
         print_info("Execution details:")
         click.echo(all_outputs)
