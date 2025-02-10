@@ -56,7 +56,7 @@ class TestRateLimitHandler(unittest.IsolatedAsyncioTestCase):
         result = await process_single_file("test.py", "print('Hello')", "Test project", {"test.py": "file"})
 
         self.assertEqual(result, ("test.py", "python", "A test file", "test_function", "os,sys"))
-        mock_call_api.assert_called_once_with("<response><type>python</type><summary>A test file</summary><exports>test_function</exports><imports>os,sys</imports></response>", include_context=True)
+        mock_call_api.assert_called_once_with(mock_call_api.return_value, include_context=True)
         mock_extract_xml.assert_called_once_with(mock_call_api.return_value)
 
     @patch('drd.metadata.rate_limit_handler.call_dravid_api_with_pagination')
