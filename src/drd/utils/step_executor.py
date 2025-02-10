@@ -213,7 +213,7 @@ class Executor:
                     print(line.strip())
                     output.append(line)
 
-                time.sleep(00.1)  # Corrected from time.sleep(00.1) to time.sleep(0.1)
+                time.sleep(0.1)  # Corrected from time.sleep(00.1) to time.sleep(0.1)
 
             stdout, stderr = process.communicate()
             output.append(stdout)
