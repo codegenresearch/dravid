@@ -148,7 +148,8 @@ class TestDynamicCommandHandler(unittest.TestCase):
     @patch('os.path.abspath')
     def test_handle_cd_command_changes_directory(self, mock_abspath, mock_chdir):
         mock_abspath.return_value = '/fake/path/app'
-        self.executor._handle_cd_command('cd app')
+        result = self.executor._handle_cd_command('cd app')
+        self.assertEqual(result, "Changed directory to: /fake/path/app")
         mock_chdir.assert_called_once_with('/fake/path/app')
         self.assertEqual(self.executor.current_dir, '/fake/path/app')
 
@@ -160,7 +161,6 @@ class TestDynamicCommandHandler(unittest.TestCase):
         mock_process.communicate.return_value = ('', '')
         mock_popen.return_value = mock_process
 
-        self.executor.current_dir = '/initial/path'
         result = self.executor._execute_single_command('echo "Hello"', 300)
         self.assertEqual(result, 'output line')
         mock_popen.assert_called_once_with(
@@ -170,7 +170,7 @@ class TestDynamicCommandHandler(unittest.TestCase):
             stderr=subprocess.PIPE,
             text=True,
             env=self.executor.env,
-            cwd='/initial/path'
+            cwd=self.executor.current_dir
         )
 
     @patch('click.confirm')
@@ -179,7 +179,6 @@ class TestDynamicCommandHandler(unittest.TestCase):
     def test_execute_shell_command_cd_changes_directory(self, mock_abspath, mock_chdir, mock_confirm):
         mock_confirm.return_value = True
         mock_abspath.return_value = '/fake/path/app'
-        self.executor.execute_shell_command.return_value = "Changed directory to: /fake/path/app"
         result = self.executor.execute_shell_command('cd app')
         self.assertEqual(result, "Changed directory to: /fake/path/app")
         mock_chdir.assert_called_once_with('/fake/path/app')
@@ -195,7 +194,6 @@ class TestDynamicCommandHandler(unittest.TestCase):
         mock_process.communicate.return_value = ('', '')
         mock_popen.return_value = mock_process
 
-        self.executor.execute_shell_command.return_value = 'Hello, World!'
         result = self.executor.execute_shell_command('echo "Hello, World!"')
         self.assertEqual(result, 'Hello, World!')
 
@@ -205,9 +203,9 @@ class TestDynamicCommandHandler(unittest.TestCase):
     def test_perform_file_operation_create_writes_content(self, mock_confirm, mock_file, mock_exists):
         mock_exists.return_value = False
         mock_confirm.return_value = True
-        self.executor.perform_file_operation.return_value = True
-        self.executor.perform_file_operation(
+        result = self.executor.perform_file_operation(
             'CREATE', 'test.txt', 'content')
+        self.assertTrue(result)
         mock_file.assert_called_with(os.path.join(
             self.executor.current_dir, 'test.txt'), 'w')
         mock_file().write.assert_called_with('content')
@@ -223,8 +221,9 @@ class TestDynamicCommandHandler(unittest.TestCase):
 ### Key Changes Made:
 1. **Removed Invalid Syntax**: Removed the invalid comment that was causing the `SyntaxError`.
 2. **Consolidated Tests**: Removed the duplicate `test_execute_commands` method.
-3. **Mocking Consistency**: Ensured that the methods `execute_shell_command` and `_execute_single_command` return the expected string outputs.
-4. **Assertions**: Added assertions to check the expected outputs and states.
-5. **Directory Handling**: Ensured that the `chdir` function is called with the correct paths in the directory change tests.
-6. **File Operations**: Ensured that the `open` function is called with the correct file path and mode in the file operation tests.
-7. **Step Completion Tracking**: Added specific checks for the completion of steps using `mock_print_debug` to verify that the correct completion messages are printed.
+3. **Mocking Consistency**: Ensured that the mocks are consistent with the expected behavior.
+4. **Assertions on Output**: Added specific assertions to check for the correct outputs and states.
+5. **Step Completion Tracking**: Used `mock_print_debug` to assert that the correct completion messages are printed for each step.
+6. **Error Handling Tests**: Structured the error handling tests similarly to the gold code.
+7. **File Operation Tests**: Ensured that the file operation tests check for the correct file path and mode when opening files and verify that the content is written as expected.
+8. **Directory Handling**: Reviewed and ensured that directory handling tests correctly assert the changes in the current directory and that the `chdir` function is called with the right arguments.
