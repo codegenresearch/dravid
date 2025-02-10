@@ -87,13 +87,6 @@ def stream_and_print_commands(chunks):
     click.echo()  # Final newline
 
 
-# Output Formatting: Ensure that when you print styled labels, you separate them from the content with a space.
-# Click Echo Consistency: Review how you are using click.echo for different outputs.
-# CDATA Content Handling: When processing CDATA content, ensure that you are following the same structure as in the gold code.
-# Comment Clarity: Ensure that comments are concise and match the style of the gold code.
-# Variable Naming and Structure: Double-check that your regex patterns and variable names are consistent with the gold code.
-
-
 ### Changes Made:
 1. **Removed Markdown-style Comment**: Removed the Markdown-style comment at the end of the file to avoid syntax errors.
 2. **Output Formatting**: Ensured that styled labels and content are printed in separate `click.echo` calls with `nl=False` for the label to avoid a newline after the label.
