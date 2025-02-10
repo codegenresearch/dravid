@@ -10,10 +10,10 @@ from ...utils.parser import parse_dravid_response
 
 
 def execute_dravid_command(query, image_path, debug, instruction_prompt, warn=None):
-    print_info("Starting Dravid CLI tool...")
+    print_info("🚀 Starting Dravid CLI tool...")
     if warn:
-        print_warning("Please ensure you are in a fresh directory.")
-        print_warning("If it is an existing project, ensure you are on a git branch.")
+        print_warning("⚠️ Please ensure you are in a fresh directory.")
+        print_warning("⚠️ If it is an existing project, ensure you are on a git branch.")
 
     executor = Executor()
     metadata_manager = ProjectMetadataManager(executor.current_dir)
@@ -22,26 +22,26 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt, warn=No
         project_context = metadata_manager.get_project_context()
 
         if project_context:
-            print_info("Identifying related files to the query...")
-            print_info("LLM calls to be made: 1")
+            print_info("🔍 Identifying related files to the query...")
+            print_info("💬 LLM calls to be made: 1")
             files_to_modify = run_with_loader(
                 lambda: get_files_to_modify(query, project_context),
-                "Analyzing project files"
+                "🔍 Analyzing project files"
             )
 
-            print_info(f"Found {len(files_to_modify)} potentially relevant files.")
+            print_info(f"🔍 Found {len(files_to_modify)} potentially relevant files.")
             if debug:
-                print_info("Possible files to be modified:")
+                print_info("🔍 Possible files to be modified:")
                 for file in files_to_modify:
                     print(f"  - {file}")
 
-            print_info("Reading file contents...")
+            print_info("📖 Reading file contents...")
             file_contents = {}
             for file in files_to_modify:
                 content = get_file_content(file)
                 if content:
                     file_contents[file] = content
-                    print_info(f"  - Read content of {file}")
+                    print_info(f"  - 📖 Read content of {file}")
 
             project_guidelines = fetch_project_guidelines(executor.current_dir)
             file_context = "\n".join(
@@ -56,58 +56,66 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt, warn=No
         else:
             is_empty = is_directory_empty(executor.current_dir)
             print_info(
-                "No current project context found. Will create a new project in the current directory.")
+                f"🔍 No current project context found. {'Current directory is empty.' if is_empty else 'Will create a new project in the current directory.'}")
             full_query = f"User query: {query}"
 
-        print_info("Preparing to send query to LLM...")
+        print_info("💬 Preparing to send query to LLM...")
         if image_path:
-            print_info(f"Processing image: {image_path}")
-            print_info("LLM calls to be made: 1")
+            print_info(f"📸 Processing image: {image_path}")
+            print_info("💬 LLM calls to be made: 1")
             commands = run_with_loader(
                 lambda: call_dravid_vision_api(
                     full_query, image_path, include_context=True, instruction_prompt=instruction_prompt),
-                "Analyzing image and generating response"
+                "📸 Analyzing image and generating response"
             )
         else:
-            print_info("Streaming response from LLM...")
-            print_info("LLM calls to be made: 1")
+            print_info("💬 Streaming response from LLM...")
+            print_info("💬 LLM calls to be made: 1")
             xml_result = stream_dravid_api(
                 full_query, include_context=True, instruction_prompt=instruction_prompt, print_chunk=False)
             commands = parse_dravid_response(xml_result)
             if debug:
-                print_debug(f"Received {len(commands)} new command(s)")
+                print_debug(f"💬 Received {len(commands)} new command(s)")
 
         if not commands:
-            print_error("Failed to parse Claude's response or no commands to execute.")
-            print("Actual result:", xml_result)
+            print_error("❌ Failed to parse Claude's response or no commands to execute.")
+            print("💬 Actual result:", xml_result)
             return
 
-        print_info(f"Parsed {len(commands)} commands from Claude's response.")
+        print_info(f"💬 Parsed {len(commands)} commands from Claude's response.")
 
         # Execute commands using the new execute_commands function
         success, step_completed, error_message, all_outputs = execute_commands(
             commands, executor, metadata_manager, debug=debug)
 
         if not success:
-            print_error(f"Failed to execute command at step {step_completed}.")
-            print_error(f"Error message: {error_message}")
-            print_info("Attempting to fix the error...")
+            print_error(f"❌ Failed to execute command at step {step_completed}.")
+            print_error(f"💬 Error message: {error_message}")
+            print_info("🛠️ Attempting to fix the error...")
             if handle_error_with_dravid(Exception(error_message), commands[step_completed-1], executor, metadata_manager, debug=debug):
-                print_info("Fix applied successfully. Continuing with the remaining commands.")
+                print_info("🛠️   Fix applied successfully. Continuing with the remaining commands.")
                 # Re-execute the remaining commands
                 remaining_commands = commands[step_completed:]
                 success, _, error_message, additional_outputs = execute_commands(
                     remaining_commands, executor, metadata_manager, debug=debug)
                 all_outputs += "\n" + additional_outputs
             else:
-                print_error("Unable to fix the error. Skipping this command and continuing with the next.")
+                print_error("🛠️   Unable to fix the error. Skipping this command and continuing with the next.")
 
-        print_info("Execution details:")
+        print_info("💬 Execution details:")
         click.echo(all_outputs)
 
-        print_success("Dravid CLI tool execution completed.")
+        print_success("🎉 Dravid CLI tool execution completed.")
     except Exception as e:
-        print_error(f"An unexpected error occurred: {str(e)}")
+        print_error(f"❌ An unexpected error occurred: {str(e)}")
         if debug:
             import traceback
             traceback.print_exc()
+
+
+This code addresses the feedback by:
+1. Adding the necessary print statements with correct indentation and messages.
+2. Enhancing readability with emojis and symbols.
+3. Improving error messages for clarity.
+4. Adding context about the directory status when no project context is found.
+5. Ensuring consistent formatting and structure throughout the function.
