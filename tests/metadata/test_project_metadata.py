@@ -90,20 +90,18 @@ class TestProjectMetadataManager(unittest.TestCase):
     @patch('os.path.exists')
     @patch('builtins.open', new_callable=mock_open, read_data='print("Hello, World!")')
     @patch.object(ProjectMetadataManager, 'update_file_metadata')
-    def test_update_metadata_from_file_single(self, mock_update, mock_file, mock_exists):
+    def test_update_metadata_from_file(self, mock_update, mock_file, mock_exists):
         mock_exists.return_value = True
+        # Test with a single file
         result = self.manager.update_metadata_from_file("test.py")
         self.assertTrue(result)
         mock_update.assert_called_once_with(
-            "test.py", "py", 'print("Hello, World!")')
+            "test.py", "py", 'print("Hello, World!")', description=None, exports=None)
 
-    @patch('os.path.exists')
-    @patch('builtins.open', new_callable=mock_open)
-    @patch.object(ProjectMetadataManager, 'save_metadata')
-    def test_update_metadata_from_file_multiple(self, mock_save, mock_file, mock_exists):
-        mock_exists.return_value = True
+        # Reset mock calls for the next test
+        mock_update.reset_mock()
 
-        # Initial metadata
+        # Test with multiple files
         initial_metadata = {
             "project_name": "old_project",
             "last_updated": "",
@@ -116,7 +114,6 @@ class TestProjectMetadataManager(unittest.TestCase):
         }
         self.manager.metadata = initial_metadata
 
-        # New metadata to be updated
         new_metadata = {
             "project_name": "pyserv",
             "last_updated": "2023-07-18T10:00:00",
@@ -140,17 +137,12 @@ class TestProjectMetadataManager(unittest.TestCase):
             }
         }
 
-        # Mock the file read operation to return the new metadata
         mock_file.return_value.__enter__.return_value.read.return_value = json.dumps(
             new_metadata)
 
-        # Call the method to update metadata
         result = self.manager.update_metadata_from_file()
-
-        # Assert that the update was successful
         self.assertTrue(result)
 
-        # Assert that the metadata has been updated correctly
         self.assertEqual(self.manager.metadata['project_name'], "pyserv")
         self.assertEqual(len(self.manager.metadata['files']), 2)
         self.assertEqual(
@@ -160,7 +152,6 @@ class TestProjectMetadataManager(unittest.TestCase):
         self.assertEqual(
             self.manager.metadata['dev_server']['language'], "python")
 
-        # Check file metadata
         app_py = next(
             f for f in self.manager.metadata['files'] if f['filename'] == 'app.py')
         self.assertEqual(app_py['description'], "Main application file")
@@ -174,3 +165,12 @@ class TestProjectMetadataManager(unittest.TestCase):
             requirements_txt['description'], "Project dependencies")
         self.assertTrue(
             requirements_txt['content_preview'].startswith("Flask==2.3.2"))
+
+
+### Key Changes:
+1. **Method Signature**: Updated `update_metadata_from_file` in the test to match the method signature in `ProjectMetadataManager`.
+2. **Test Method Naming**: Simplified the test method name to `test_update_metadata_from_file` to handle both single and multiple file updates.
+3. **Mocking Consistency**: Ensured consistent use of mocks for file operations.
+4. **Assertions**: Verified that assertions match the expected outcomes.
+5. **Metadata Structure**: Ensured the metadata structure is consistent with the expected format.
+6. **Code Comments**: Removed unnecessary comments to enhance readability.
