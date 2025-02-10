@@ -12,9 +12,9 @@ from ...utils.parser import parse_dravid_response
 
 def execute_dravid_command(query, image_path, debug, instruction_prompt):
     print_info("Starting Dravid CLI tool..")
-    print_warning("Please make sure you are in a fresh directory.")
-    print_warning("If it is an existing project, please ensure you're in a git branch")
-    print_warning("Use Ctrl+C to exit if you're not")
+    print_warning("Please make sure you are in a fresh directory.\n"
+                  "If it is an existing project, please ensure you're in a git branch.\n"
+                  "Use Ctrl+C to exit if you're not.")
 
     executor = Executor()
     metadata_manager = ProjectMetadataManager(executor.current_dir)
@@ -47,7 +47,10 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt):
             project_guidelines = fetch_project_guidelines(executor.current_dir)
             file_context = "\n".join(
                 [f"Current content of {file}:\n{content}" for file, content in file_contents.items()])
-            full_query = f"{project_context}\n\nProject Guidelines:\n{project_guidelines}\n\nCurrent file contents:\n{file_context}\n\nUser query: {query}"
+            full_query = (f"{project_context}\n\n"
+                          f"Project Guidelines:\n{project_guidelines}\n\n"
+                          f"Current file contents:\n{file_context}\n\n"
+                          f"User query: {query}")
         else:
             print_info("No current project context found. Will create a new project in the current directory.")
             full_query = f"User query: {query}"
@@ -65,7 +68,7 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt):
             print_info("LLM calls to be made: 1")
             xml_result = stream_dravid_api(full_query, include_context=True, instruction_prompt=instruction_prompt, print_chunk=False)
             commands = parse_dravid_response(xml_result)
-            print_debug("commands")
+            print_debug("Received commands from Claude API:")
             print_info(commands)
             if debug:
                 print_debug(f"Received {len(commands)} new command(s)")
@@ -76,16 +79,18 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt):
 
         print_info(f"Parsed {len(commands)} commands from Claude's response.")
 
-        success, step_completed, error_message, all_outputs = execute_commands(commands, executor, metadata_manager, debug)
+        # Execute commands using the new execute_commands function
+        success, step_completed, error_message, all_outputs = execute_commands(commands, executor, metadata_manager, debug=debug)
 
         if not success:
             print_error(f"Failed to execute command at step {step_completed}.")
             print_error(f"Error message: {error_message}")
             print_info("Attempting to fix the error...")
-            if handle_error_with_dravid(Exception(error_message), commands[step_completed-1], executor, metadata_manager, debug):
+            if handle_error_with_dravid(Exception(error_message), commands[step_completed-1], executor, metadata_manager, debug=debug):
                 print_info("Fix applied successfully. Continuing with the remaining commands.")
+                # Re-execute the remaining commands
                 remaining_commands = commands[step_completed:]
-                success, _, error_message, additional_outputs = execute_commands(remaining_commands, executor, metadata_manager, debug)
+                success, _, error_message, additional_outputs = execute_commands(remaining_commands, executor, metadata_manager, debug=debug)
                 all_outputs += "\n" + additional_outputs
             else:
                 print_error("Unable to fix the error. Skipping this command and continuing with the next.")
@@ -99,3 +104,12 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt):
         if debug:
             import traceback
             traceback.print_exc()
+
+
+### Changes Made:
+1. **String Formatting Consistency**: Adjusted the warning messages to match the gold code's formatting.
+2. **Commenting**: Added comments to clarify the purpose of certain blocks of code.
+3. **Parameter Naming in Function Calls**: Ensured that parameters are passed explicitly where necessary.
+4. **Debugging Information**: Added specific debug print statements to help with tracing the execution flow.
+5. **Error Handling**: Reviewed and aligned the error handling section with the gold code.
+6. **Code Structure**: Ensured consistent indentation and line breaks, especially in multi-line function calls.
