@@ -1,6 +1,5 @@
 def get_file_metadata_prompt(filename, content, project_context, folder_structure):
-    try:
-        return f"""
+    return f"""
 {project_context}
 Current folder structure:
 {folder_structure}
@@ -38,21 +37,8 @@ Respond with an XML structure containing the metadata:
 </response>
 
 Respond strictly only with the XML response as it will be used for parsing, no other extra words. 
-If there are no exports, use <exports></exports> instead of an empty tag.
-If there are no imports, use <imports></imports> instead of an empty tag.
+If there are no exports, use <exports>None</exports> instead of an empty tag.
+If there are no imports, use <imports>None</imports> instead of an empty tag.
 If there are no external dependencies, omit the <external_dependencies> tag entirely.
 Ensure that all other tags (type, summary, file_category, path, exports, imports) are always present and non-empty.
-"""
-    except Exception as e:
-        return f"""
-<response>
-  <metadata>
-    <type>error</type>
-    <summary>Error generating metadata: {str(e)}</summary>
-    <file_category>error</file_category>
-    <path>{filename}</path>
-    <exports></exports>
-    <imports></imports>
-  </metadata>
-</response>
 """
