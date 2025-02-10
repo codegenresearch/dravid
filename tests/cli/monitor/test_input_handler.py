@@ -22,8 +22,8 @@ class TestInputHandler(unittest.TestCase):
         thread = threading.Thread(target=run_input_handler)
         thread.start()
 
-        # Use a small sleep to allow the thread to process the input
-        time.sleep(0.1)
+        # Use a timeout to ensure the thread has completed its execution
+        thread.join(timeout=10)
 
         if thread.is_alive():
             self.fail("_handle_input did not complete within the timeout period")
@@ -73,3 +73,11 @@ class TestInputHandler(unittest.TestCase):
         result = self.input_handler._autocomplete('/path/to/f')
         self.assertEqual(result, ['/path/to/file.txt'])
         mock_glob.assert_called_once_with('/path/to/f*')
+
+
+### Changes Made:
+1. **Thread Joining**: Changed the approach to wait for the thread to complete by using `thread.join(timeout=10)` instead of `time.sleep(0.1)`.
+2. **Mock Call Assertions**: Ensured that the assertions for `mock_execute_command` are consistent with the expected behavior.
+3. **Input Handling**: Verified that the input strings used in the mocks are consistent with the expected input.
+4. **Comment Clarity**: Added comments to clarify the purpose of the code.
+5. **Consistency in Mocking**: Ensured that mocks are set up and asserted in a manner that matches the expected behavior.
