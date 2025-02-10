@@ -168,7 +168,7 @@ def construct_full_query(query, executor, project_context, files_info=None, refe
 
 
 ### Changes Made:
-1. **Removed Invalid Syntax**: Removed the invalid syntax comment that was causing the `SyntaxError`.
+1. **Removed Invalid Syntax Comment**: Removed the invalid syntax comment that was causing the `SyntaxError`.
 2. **Consistent Conditional Checks**: Added checks for the existence of keys in dictionaries to avoid potential `KeyError`.
 3. **Indentation and Formatting**: Ensured consistent indentation levels and formatting of print statements.
 4. **Error Handling**: Reviewed and ensured robust error handling with stack traces in debug mode.
@@ -177,7 +177,7 @@ def construct_full_query(query, executor, project_context, files_info=None, refe
 7. **Use of Comments**: Added comments where necessary to clarify complex logic or important steps.
 
 ### Summary of Changes:
-1. **Removed Invalid Syntax**: The problematic comment has been removed to prevent syntax errors.
+1. **Removed Invalid Syntax Comment**: The problematic comment has been removed to prevent syntax errors.
 2. **Consistent Conditional Checks**: Added checks for the existence of keys in dictionaries to avoid `KeyError`.
 3. **Indentation and Formatting**: Ensured consistent indentation and formatting for better readability.
 4. **Error Handling**: Ensured comprehensive error handling with stack traces in debug mode.
