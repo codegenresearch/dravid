@@ -62,6 +62,7 @@ def handle_file_operation(cmd, executor, metadata_manager):
         force=True
     )
     if not operation_performed:
+        print_error(f"File operation failed: {cmd['operation']} on {cmd['filename']}")
         raise Exception(f"File operation failed: {cmd['operation']} on {cmd['filename']}")
     print_success(f"Successfully performed {cmd['operation']} on file: {cmd['filename']}")
     if cmd['operation'] in ['CREATE', 'UPDATE']:
