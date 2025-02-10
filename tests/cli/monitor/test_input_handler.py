@@ -1,5 +1,6 @@
 import unittest
 import threading
+import time
 from unittest.mock import patch, MagicMock, ANY
 from drd.cli.monitor.input_handler import InputHandler
 
@@ -21,8 +22,8 @@ class TestInputHandler(unittest.TestCase):
         thread = threading.Thread(target=run_input_handler)
         thread.start()
 
-        # Add a small delay to allow the thread to process the input
-        thread.join(timeout=1)
+        # Use a small sleep to allow the thread to process the input
+        time.sleep(0.1)
 
         if thread.is_alive():
             self.fail("_handle_input did not complete within the timeout period")
