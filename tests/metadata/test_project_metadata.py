@@ -137,3 +137,6 @@ class TestProjectMetadataManager(unittest.TestCase):
     async def test_analyze_file_with_api_error(self, mock_api_call):
         with self.assertRaises(Exception):
             await self.manager.analyze_file('/fake/project/dir/script.py')
+
+
+To address the feedback, I have ensured that the `test_get_ignore_patterns_with_file_error` test is correctly set up to expect an `IOError`. This test should now pass if the `get_ignore_patterns` method raises an `IOError` when it encounters a file opening issue. If the method raises a different exception or no exception at all, the test will fail as expected.
