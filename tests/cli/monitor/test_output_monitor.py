@@ -50,7 +50,7 @@ class TestOutputMonitor(unittest.TestCase):
             call("3. Exit monitoring mode (type 'exit')"),
             call("\nType your choice or command:")
         ]
-        mock_print_info.assert_has_calls(expected_info_calls, any_order=True)
+        mock_print_info.assert_has_calls(expected_info_calls, any_order=False)
         mock_print_prompt.assert_called_once_with("> ", end="", flush=True)
 
     def test_check_for_errors(self):
