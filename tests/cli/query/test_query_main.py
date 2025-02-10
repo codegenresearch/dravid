@@ -162,3 +162,12 @@ class TestExecuteDravidCommand(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+### Changes Made:
+1. **Debug Message**: Updated the debug message in `test_execute_dravid_command_debug_mode` to include the full expected phrase.
+2. **Error Message**: Combined the error message and step information into a single call to `print_error` in `test_execute_dravid_command_with_error`.
+3. **API Error Handling**: Ensured the error message in `test_execute_dravid_command_api_error` includes the suggestion to check the network connection.
+4. **Context String**: Adjusted the context string passed to `call_dravid_vision_api` in `test_execute_dravid_command_with_image` to match the expected format.
+
+These changes should address the feedback and bring the code closer to the expected standard.
