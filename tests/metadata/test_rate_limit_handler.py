@@ -26,14 +26,11 @@ class TestRateLimitHandler(unittest.IsolatedAsyncioTestCase):
 
         acquire_times = []
         for i in range(5):
-            try:
-                await limiter.acquire()
-                current_time = time.time()
-                acquire_times.append(current_time - start_time)
-                logger.debug(
-                    f"Acquire {i+1} at {current_time - start_time:.4f} seconds")
-            except Exception as e:
-                logger.error(f"Error acquiring rate limit: {e}")
+            await limiter.acquire()
+            current_time = time.time()
+            acquire_times.append(current_time - start_time)
+            logger.debug(
+                f"Acquire {i+1} at {current_time - start_time:.4f} seconds")
 
         end_time = time.time()
         total_time = end_time - start_time
@@ -64,15 +61,10 @@ class TestRateLimitHandler(unittest.IsolatedAsyncioTestCase):
         mock_extract_xml.assert_called_once_with(mock_call_api.return_value)
 
     @patch('drd.metadata.rate_limit_handler.call_dravid_api_with_pagination')
-    @patch('drd.metadata.rate_limit_handler.extract_and_parse_xml')
-    async def test_process_single_file_error(self, mock_extract_xml, mock_call_api):
+    async def test_process_single_file_error(self, mock_call_api):
         mock_call_api.side_effect = Exception("API Error")
 
-        try:
-            result = await process_single_file("test.py", "print('Hello')", "Test project", {"test.py": "file"})
-        except Exception as e:
-            logger.error(f"Error processing file: {e}")
-            result = ("test.py", "unknown", f"Error: {e}", "", "")
+        result = await process_single_file("test.py", "print('Hello')", "Test project", {"test.py": "file"})
 
         self.assertEqual(result[0], "test.py")
         self.assertEqual(result[1], "unknown")
