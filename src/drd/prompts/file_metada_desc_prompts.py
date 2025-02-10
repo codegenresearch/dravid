@@ -7,7 +7,7 @@ File: {filename}
 Content:
 {content}
 
-You're the project context maintainer. Your role is to generate comprehensive and clear metadata for the project files to assist AI coding assistants in future tasks.
+You're the project context maintainer. Your role is to generate appropriate metadata for this file based on its content, the project context, and the current folder structure. The metadata should be clear and comprehensive to assist AI coding assistants in future tasks.
 
 ### Guidelines:
 1. **Type**: Specify the programming language or file type explicitly.
@@ -24,10 +24,10 @@ Respond with an XML structure containing the metadata:
 
 <response>
   <metadata>
+    <path>{filename}</path>
     <type>file_type</type>
     <summary>Description based on the file's contents, project context, and folder structure</summary>
     <file_category>code_file or dependency_file</file_category>
-    <path>{filename}</path>
     <exports>fun:functionName,class:ClassName,var:variableName</exports>
     <imports>path/to/file:importedName</imports>
     {'<external_dependencies>' + ''.join(f'<dependency>{dep}</dependency>' for dep in ['name1@version1', 'name2@version2']) + '</external_dependencies>' if ['name1@version1', 'name2@version2'] else ''}
@@ -38,10 +38,10 @@ Respond with an XML structure containing the metadata:
 - **Code File Example**:
 <response>
   <metadata>
+    <path>utils/data_utils.py</path>
     <type>Python</type>
     <summary>This file contains utility functions for data processing.</summary>
     <file_category>code_file</file_category>
-    <path>utils/data_utils.py</path>
     <exports>fun:process_data,fun:clean_data</exports>
     <imports>data/utils:load_data</imports>
   </metadata>
@@ -50,10 +50,10 @@ Respond with an XML structure containing the metadata:
 - **Dependency File Example**:
 <response>
   <metadata>
+    <path>requirements.txt</path>
     <type>JSON</type>
     <summary>Dependency management file for project.</summary>
     <file_category>dependency_file</file_category>
-    <path>requirements.txt</path>
     <exports>None</exports>
     <imports>None</imports>
     <external_dependencies>
