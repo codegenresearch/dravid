@@ -14,9 +14,10 @@ You are the project context maintainer. Your role is to generate comprehensive a
 1. **Summary**: Provide a brief summary of the file's main purpose.
 2. **File Category**: Specify whether the file is a `code_file` or `dependency_file`.
 3. **Type**: Specify the programming language or file type explicitly.
-4. **Exports**: List all exports (functions, classes, or variables available for importing). Use the format `fun:functionName,class:ClassName,var:variableName`. If there are no exports, use `None`.
-5. **Imports**: List all imports from other project files. Use the format `path/to/file:importedName`. If there are no imports, use `None`.
-6. **External Dependencies**: List all external dependencies if the file is a dependency management file (e.g., package.json, requirements.txt, Cargo.toml). Use the format `name@version`. Omit this section if there are no external dependencies.
+4. **Path**: Include the full path of the file within the project.
+5. **Exports**: List all exports (functions, classes, or variables available for importing). Use the format `fun:functionName,class:ClassName,var:variableName`. If there are no exports, use `None`.
+6. **Imports**: List all imports from other project files. Use the format `path/to/file:importedName`. If there are no imports, use `None`.
+7. **External Dependencies**: List all external dependencies if the file is a dependency management file (e.g., package.json, requirements.txt, Cargo.toml). Use the format `name@version`. Omit this section if there are no external dependencies.
 
 Based on the file content, project context, and the current folder structure, please provide detailed metadata for this file.
 
@@ -24,17 +25,17 @@ Respond with an XML structure containing the metadata:
 
 <response>
   <metadata>
-    <type>{'Python'}</type>
-    <summary>{'A clear and concise summary based on the file\'s contents, project context, and folder structure'}</summary>
-    <file_category>{'code_file or dependency_file'}</file_category>
+    <type>Python</type>
+    <summary>A clear and concise summary based on the file's contents, project context, and folder structure</summary>
+    <file_category>code_file or dependency_file</file_category>
     <path>{filename}</path>
-    <exports>{'fun:functionName,class:ClassName,var:variableName' or 'None'}</exports>
-    <imports>{'path/to/file:importedName' or 'None'}</imports>
+    <exports>fun:functionName,class:ClassName,var:variableName</exports>
+    <imports>path/to/file:importedName</imports>
     {'<external_dependencies>' + ''.join(f'<dependency>{dep}</dependency>' for dep in ['name1@version1', 'name2@version2']) + '</external_dependencies>' if ['name1@version1', 'name2@version2'] else ''}
   </metadata>
 </response>
 
-Ensure that all tags (type, summary, file_category, path, exports, imports) are always present and non-empty. If there are no external dependencies, omit the <external_dependencies> tag entirely.
+Ensure that all tags (type, summary, file_category, path, exports, imports) are always present and non-empty. If there are no exports, use `None` instead of an empty tag. If there are no imports, use `None` instead of an empty tag. If there are no external dependencies, omit the <external_dependencies> tag entirely.
 
 ### Examples:
 - **Code File Example**:
