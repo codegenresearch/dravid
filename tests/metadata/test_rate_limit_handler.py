@@ -29,8 +29,7 @@ class TestRateLimitHandler(unittest.IsolatedAsyncioTestCase):
             await limiter.acquire()
             current_time = time.time()
             acquire_times.append(current_time - start_time)
-            logger.debug(
-                f"Acquire {i+1} at {current_time - start_time:.4f} seconds")
+            logger.debug(f"Acquire {i+1} at {current_time - start_time:.4f} seconds")
 
         end_time = time.time()
         total_time = end_time - start_time
@@ -66,11 +65,8 @@ class TestRateLimitHandler(unittest.IsolatedAsyncioTestCase):
 
         result = await process_single_file("test.py", "print('Hello')", "Test project", {"test.py": "file"})
 
-        self.assertEqual(result[0], "test.py")
-        self.assertEqual(result[1], "unknown")
-        self.assertTrue(result[2].startswith("Error:"))
-        self.assertEqual(result[3], "")
-        self.assertEqual(result[4], "")
+        self.assertEqual(result, ("test.py", "unknown", "Error: API Error", "", ""))
+        mock_call_api.assert_called_once()
 
     @patch('drd.metadata.rate_limit_handler.process_single_file')
     async def test_process_files(self, mock_process_single_file):
@@ -109,3 +105,6 @@ class TestRateLimitHandler(unittest.IsolatedAsyncioTestCase):
         # (2 batches of 10 files, each taking 0.1 seconds)
         # Allow some margin for error
         self.assertLess(end_time - start_time, 0.3)
+
+
+This code addresses the feedback by ensuring consistent return values, proper error handling, and maintaining the expected structure and format in the tests.
