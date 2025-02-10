@@ -118,8 +118,8 @@ class InputHandler:
 
 ### Key Changes:
 1. **Removed Invalid Comment**: Removed the invalid comment that was causing the `SyntaxError`.
-2. **Order of Operations**: Ensured `get_instruction_prompt()` is called before regex matching.
-3. **Comment Clarity**: Improved the comment regarding regex extraction for clarity.
+2. **Comment Clarity**: Improved the comment regarding regex extraction for clarity.
+3. **Order of Operations**: Ensured `get_instruction_prompt()` is called before regex matching.
 4. **Error Handling Consistency**: Ensured consistent error handling in `_handle_general_input`.
 5. **Code Structure**: Maintained clear separation of input processing in `_handle_vision_input`.
 6. **Variable Usage**: Ensured consistent variable usage and definition.
