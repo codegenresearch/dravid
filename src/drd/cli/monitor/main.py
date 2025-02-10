@@ -2,11 +2,11 @@ import re
 import os
 from .server_monitor import DevServerMonitor
 from .error_resolver import monitoring_handle_error_with_dravid
-from ...utils import print_info, print_error, print_success, print_prompt
+from ...utils import print_info, print_error, print_prompt
 
 
 def run_dev_server_with_monitoring(command: str):
-    print_header("Starting server monitoring...")
+    print_header("Starting server monitoring. Press Ctrl+C to stop.")
     error_handlers = {
         r"(?:Cannot find module|Module not found|ImportError|No module named)": handle_module_not_found,
         r"(?:SyntaxError|Expected|Unexpected token)": handle_syntax_error,
@@ -16,11 +16,8 @@ def run_dev_server_with_monitoring(command: str):
     monitor = DevServerMonitor(current_dir, error_handlers, command)
     try:
         monitor.start()
-        print_success("Server monitoring started.")
-        print_prompt("Press Ctrl+C to stop.")
         while not monitor.should_stop.is_set():
             pass
-        print_info("Server monitoring ended.")
     except KeyboardInterrupt:
         print_info("Stopping server monitor...")
     finally:
@@ -33,10 +30,10 @@ def handle_module_not_found(error_msg, monitor):
         r"(?:Cannot find module|Module not found|ImportError|No module named).*['\"](.*?)['\"]", error_msg, re.IGNORECASE)
     if match:
         module_name = match.group(1)
-        error = ImportError(f"Module '{module_name}' not found.")
+        error = ImportError(f"Module '{module_name}' not found")
         monitoring_handle_error_with_dravid(error, error_msg, monitor)
     else:
-        error = Exception("Unknown module not found error.")
+        error = Exception("Unknown module not found error")
         monitoring_handle_error_with_dravid(error, error_msg, monitor)
 
 
