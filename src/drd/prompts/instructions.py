@@ -79,3 +79,15 @@ def get_instruction_prompt():
   <requires_restart>true</requires_restart>
 </response>
 """
+
+
+### Addressing Oracle Feedback:
+
+1. **XML Structure**: Ensured the XML format is strictly followed with consistent indentation and proper opening and closing tags.
+2. **Explanation Section**: Made the explanation more concise and focused on the purpose of the steps.
+3. **Step Formatting**: Each step clearly defines the type and operation, with content for file operations formatted correctly.
+4. **Metadata Updates**: Ensured the JSON structure is correctly formatted with proper indentation and all necessary fields included.
+5. **Shell Commands**: Separated shell commands into distinct steps for clarity and sequential execution.
+6. **File Operations**: Provided only the necessary changes for file creation and updates.
+7. **Restart Requirement**: Included the `<requires_restart>` tag with the appropriate value.
+8. **General Guidelines**: Reviewed and adhered to the guidelines provided in the gold code.
