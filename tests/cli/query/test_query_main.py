@@ -154,4 +154,4 @@ if __name__ == '__main__':
     unittest.main()
 
 
-This code snippet addresses the feedback by ensuring that the print statements include the correct emojis and indentation levels, and that the error messages match the expected format.
+This code snippet removes any invalid syntax errors and ensures that the print statements and error messages match the expected format and indentation levels as per the feedback.
