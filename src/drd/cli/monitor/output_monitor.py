@@ -37,15 +37,15 @@ class OutputMonitor:
 
             if self.monitor.process.poll() is not None and not self.monitor.processing_input.is_set():
                 if not self.monitor.restart_requested.is_set():
-                    print_error("The server process has terminated unexpectedly.")
+                    print_error("Server process ended unexpectedly.")
                     if self.retry_count < MAX_RETRIES:
                         print_info(
-                            f"Attempting to restart the server... (Attempt {self.retry_count + 1}/{MAX_RETRIES})")
+                            f"Restarting... (Attempt {self.retry_count + 1}/{MAX_RETRIES})")
                         self.monitor.perform_restart()
                         self.retry_count += 1
                     else:
                         print_error(
-                            f"Failed to restart the server after {MAX_RETRIES} attempts. Exiting the monitoring mode.")
+                            f"Server failed to start after {MAX_RETRIES} attempts. Exiting.")
                         self.monitor.stop()
                         break
                 continue
@@ -80,14 +80,14 @@ class OutputMonitor:
         if (time_since_last_output > 5 and
             not self.idle_prompt_shown and
                 not self.monitor.processing_input.is_set()):
-            print_info("\nNo more tasks are currently being auto-processed. Please specify your next action:")
+            print_info("\nNo more tasks to auto-process. What can I do next?")
             self._show_options()
             self.idle_prompt_shown = True
 
     def _show_options(self):
         print_info("\nAvailable actions:")
-        print_info("1. Provide a coding instruction for the server to execute")
-        print_info("2. Request image processing by typing 'vision'")
-        print_info("3. Exit the monitoring mode by typing 'exit'")
-        print_info("\nPlease enter your choice or command:")
+        print_info("1. Give a coding instruction to perform")
+        print_info("2. Process an image (type 'vision')")
+        print_info("3. Exit monitoring mode (type 'exit')")
+        print_info("\nType your choice or command:")
         print_prompt("> ")
