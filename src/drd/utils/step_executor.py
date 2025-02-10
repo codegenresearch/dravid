@@ -15,7 +15,6 @@ class Executor:
     def __init__(self):
         self.current_dir = os.getcwd()
         self.allowed_directories = [self.current_dir, '/fake/path']
-
         self.initial_dir = self.current_dir
         self.disallowed_commands = [
             'rmdir', 'del', 'format', 'mkfs',
@@ -203,7 +202,7 @@ class Executor:
                 return_code = process.poll()
                 if return_code is not None:
                     break
-                if time.time() - start_start > timeout:
+                if time.time() - start_time > timeout:
                     process.terminate()
                     error_message = f"Command timed out after {timeout} seconds: {command}"
                     print_error(error_message)
