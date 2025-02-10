@@ -76,7 +76,7 @@ def get_instruction_prompt():
 
 
 ### Key Changes:
-1. **Explanation Section**: Simplified the explanation to focus on essential information.
+1. **Explanation Section**: Simplified the explanation to focus on essential information and removed any non-Python syntax lines.
 2. **XML Structure**: Ensured proper XML formatting with the `<response>` tag encapsulating the entire content and consistent indentation.
 3. **Step Types and Commands**: Reviewed and ensured that commands and operations are clearly defined and follow the guidelines.
 4. **File Operations**: Used relative paths consistently for all file operations.
