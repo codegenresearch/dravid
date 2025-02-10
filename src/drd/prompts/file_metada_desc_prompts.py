@@ -26,8 +26,9 @@ Respond with an XML structure containing the metadata:
     <type>file_type</type>
     <summary>Summary based on the file's contents, project context, and folder structure</summary>
     <file_category>code_file or dependency_file</file_category>
-    <exports>fun:functionName,class:ClassName,var:variableName</exports>
-    <imports>path/to/file:importedName</imports>
+    <file_path>{filename}</file_path>
+    <exports>None</exports>
+    <imports>None</imports>
     <external_dependencies>
       <dependency>name1@version1</dependency>
       <dependency>name2@version2</dependency>
@@ -39,5 +40,5 @@ Respond strictly only with the XML response as it will be used for parsing, no o
 If there are no exports, use <exports>None</exports> instead of an empty tag.
 If there are no imports, use <imports>None</imports> instead of an empty tag.
 If there are no external dependencies, omit the <external_dependencies> tag entirely.
-Ensure that all other tags (type, summary, file_category, exports, imports) are always present and non-empty.
+Ensure that all other tags (type, summary, file_category, file_path, exports, imports) are always present and non-empty.
 """
