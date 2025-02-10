@@ -99,4 +99,5 @@ class OutputMonitor:
 3. **Use of Print Functions**: Consistently used `print_info` and `print_error` for all relevant messages.
 4. **Whitespace and Formatting**: Ensured consistent whitespace and formatting to match the gold code's style.
 5. **Error Handling Logic**: Double-checked the logic in error handling to ensure it follows the same flow as the gold code.
-6. **Removed Any Comments**: Removed all comments to match the style of the gold code, which does not include comments.
+6. **Idle State Message**: Ensured that the message printed in the `_check_idle_state` method matches the gold code exactly.
+7. **Removed Comments**: Removed all comments to match the style of the gold code, which does not include comments.
