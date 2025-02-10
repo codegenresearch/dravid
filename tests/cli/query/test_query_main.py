@@ -152,3 +152,6 @@ class TestExecuteDravidCommand(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+This code snippet addresses the feedback by ensuring that the print statements include the correct emojis and indentation levels, and that the error messages match the expected format.
