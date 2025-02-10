@@ -42,13 +42,10 @@ class InputHandler:
         print_info(
             "Enter the image path and instructions (use Tab for autocomplete):")
         user_input = self._get_input_with_autocomplete()
-        self.monitor.processing_input.set()
-        try:
-            self._handle_general_input(user_input)
-        finally:
-            self.monitor.processing_input.clear()
+        self._process_input(user_input)
 
     def _handle_general_input(self, user_input):
+        instruction_prompt = get_instruction_prompt()
         # Regex to extract image path and instructions
         image_pattern = r"([a-zA-Z0-9._/-]+(?:/|\\)?)+\.(jpg|jpeg|png|bmp|gif)"
         match = re.search(image_pattern, user_input)
@@ -61,7 +58,6 @@ class InputHandler:
                 print_error(f"Image file not found: {image_path}")
                 return
 
-            instruction_prompt = get_instruction_prompt()
             try:
                 print_info(f"Processing image: {image_path}")
                 print_info(f"With instructions: {instructions}")
@@ -70,7 +66,6 @@ class InputHandler:
             except Exception as e:
                 print_error(f"Error processing image input: {str(e)}")
         else:
-            instruction_prompt = get_instruction_prompt()
             try:
                 execute_dravid_command(
                     user_input, None, False, instruction_prompt, warn=False)
