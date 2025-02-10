@@ -16,8 +16,8 @@ def read_file_content(file_path):
 
 def suggest_file_alternative(file_path, project_metadata):
     query = (
-        "The file '" + file_path + "' doesn't exist. Can you suggest similar existing files or interpret what the user might have meant? "
-        "Use the following project metadata as context:\n\n" + project_metadata
+        f"The file '{file_path}' doesn't exist. Can you suggest similar existing files or interpret what the user might have meant? "
+        f"Use the following project metadata as context:\n\n{project_metadata}"
     )
     print_info(f"Finding similar or alternative files for '{file_path}'...")
     print_info("Making LLM call: 1")
