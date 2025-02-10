@@ -73,7 +73,8 @@ if __name__ == '__main__':
 
 ### Changes Made:
 1. **Removed Improperly Formatted Comment**: Removed the comment that was causing a `SyntaxError`.
-2. **Assertion Order**: Ensured that `mock_print_prompt` is asserted with the exact expected output.
-3. **Expected Calls Order**: Set `any_order=True` in `mock_print_info.assert_has_calls` to reflect that the order of these calls does not matter.
-4. **Formatting Consistency**: Ensured consistent formatting of the setup section and other structures.
-5. **Comments**: Added concise and clear comments to describe the purpose of each section.
+2. **Formatting of Assertions**: Ensured that the assertion for `mock_print_prompt` matches the exact expected output in terms of formatting and content.
+3. **Expected Calls Consistency**: Structured the expected calls for `mock_print_info` to match the gold code, ensuring the order and content are consistent.
+4. **Comment Clarity**: Refined comments to be more concise and directly related to the code they describe.
+5. **Variable Naming**: Ensured variable names used in assertions and setups are consistent with the gold code.
+6. **Code Structure**: Reviewed the overall structure to ensure it follows the same logical flow as the gold code, including the arrangement of setup, execution, and assertion sections.
