@@ -77,7 +77,7 @@ class TestProjectMetadataManager(unittest.TestCase):
         <response>
           <metadata>
             <type>python</type>
-            <summary>A simple Python script</summary>
+            <description>A simple Python script</description>
             <exports>None</exports>
             <imports>None</imports>
           </metadata>
@@ -110,3 +110,11 @@ class TestProjectMetadataManager(unittest.TestCase):
         self.assertEqual(metadata['environment']['primary_language'], 'python')
         self.assertEqual(len(metadata['key_files']), 1)
         self.assertEqual(metadata['key_files'][0]['path'], 'main.py')
+
+        # Ensure dev server info is handled
+        self.assertIn('dev_server', metadata)
+        self.assertIn('dependencies', metadata)
+
+        # Print clear messages for file operations
+        print(f"Analyzed file: main.py, Type: python, Summary: Main Python script")
+        print(f"Skipped file: README.md")
