@@ -2,8 +2,9 @@ import traceback
 import click
 from ...api.main import call_dravid_api
 from ...utils import print_error, print_success, print_info, print_step, print_debug
-from ...metadata.common_utils import generate_file_description
+from ...metadata.common_utils import generate_file_description, update_project_metadata, update_dev_server_info
 from ...prompts.error_resolution_prompt import get_error_resolution_prompt
+from xml.etree import ElementTree as ET
 
 
 def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=False):
@@ -27,6 +28,8 @@ def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=F
                     output = handle_metadata_operation(cmd, metadata_manager)
                 elif cmd['type'] == 'requires_restart':
                     output = 'requires restart if the server is running'
+                elif cmd['type'] == 'dependencies':
+                    output = handle_dependencies(cmd, metadata_manager)
                 else:
                     raise ValueError(f"Unknown command type: {cmd['type']}")
 
@@ -75,6 +78,7 @@ def handle_file_operation(cmd, executor, metadata_manager):
     elif operation_performed:
         print_success(
             f"Successfully performed {cmd['operation']} on file: {cmd['filename']}")
+        update_file_metadata(cmd, metadata_manager, executor)
         return "Success"
     else:
         raise Exception(
@@ -112,6 +116,14 @@ def update_file_metadata(cmd, metadata_manager, executor):
     print_debug(f"Updated metadata for {cmd['filename']} with type: {file_type}, description: {description}, exports: {exports}")
 
 
+def handle_dependencies(cmd, metadata_manager):
+    dependencies = cmd.get('dependencies', [])
+    for dependency in dependencies:
+        metadata_manager.add_dependency(dependency)
+        print_info(f"Added dependency: {dependency}")
+    return "Dependencies updated"
+
+
 def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, previous_context="", debug=False):
     if depth > 3:
         print_error(
@@ -136,6 +148,7 @@ def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, pr
     try:
         fix_commands = call_dravid_api(
             error_query, include_context=True)
+        handle_xml_response(fix_commands, metadata_manager)
     except ValueError as e:
         print_error(f"Error parsing dravid's response: {str(e)}")
         return False
@@ -165,3 +178,26 @@ def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, pr
             all_outputs,
             debug
         )
+
+
+def handle_xml_response(response, metadata_manager):
+    try:
+        root = ET.fromstring(response)
+        for step in root.findall('.//step'):
+            step_type = step.find('type').text
+            if step_type == 'metadata':
+                operation = step.find('operation').text
+                filename = step.find('filename').text
+                metadata_manager.update_metadata_from_file(filename, operation)
+                print_info(f"Updated metadata for file: {filename} with operation: {operation}")
+        project_info = root.find('.//project_info').text
+        dev_server_info = root.find('.//dev_server_info').text
+        update_project_metadata(project_info)
+        update_dev_server_info(dev_server_info)
+        print_info(f"Updated project info: {project_info}")
+        print_info(f"Updated dev server info: {dev_server_info}")
+    except ET.ParseError:
+        print_error("Failed to parse XML response from Dravid.")
+
+
+This code snippet incorporates the feedback provided by the oracle, including handling XML responses, updating file metadata within file operations, managing dependencies, and updating project and development server information.
