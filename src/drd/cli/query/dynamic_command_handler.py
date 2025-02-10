@@ -14,11 +14,13 @@ def execute_commands(commands, executor, metadata_manager, is_fix=False, debug=F
         step_description = "fix" if is_fix else "command"
         print_step(i, total_steps, f"Processing {cmd['type']} {step_description}...")
 
+        if cmd['type'] == 'explanation':
+            print_info(f"Explanation: {cmd['content']}")
+            all_outputs.append(f"Step {i}/{total_steps}: Explanation - {cmd['content']}")
+            continue
+
         try:
-            if cmd['type'] == 'explanation':
-                print_info(f"Explanation: {cmd['content']}")
-                all_outputs.append(f"Step {i}/{total_steps}: Explanation - {cmd['content']}")
-            elif cmd['type'] == 'shell':
+            if cmd['type'] == 'shell':
                 output = handle_shell_command(cmd, executor)
                 all_outputs.append(f"Step {i}/{total_steps}: Shell command - {cmd['command']}\nOutput: {output}")
             elif cmd['type'] == 'file':
@@ -44,8 +46,7 @@ def handle_shell_command(cmd, executor):
     print_info(f"Executing shell command: {cmd['command']}")
     output = executor.execute_shell_command(cmd['command'])
     if output is None:
-        print_error(f"Command failed: {cmd['command']}")
-        return None
+        raise Exception(f"Command failed: {cmd['command']}")
     print_success(f"Successfully executed: {cmd['command']}")
     if output:
         click.echo(f"Command output:\n{output}")
@@ -60,14 +61,12 @@ def handle_file_operation(cmd, executor, metadata_manager):
         cmd.get('content'),
         force=True
     )
-    if operation_performed:
-        print_success(f"Successfully performed {cmd['operation']} on file: {cmd['filename']}")
-        if cmd['operation'] in ['CREATE', 'UPDATE']:
-            update_file_metadata(cmd, metadata_manager, executor)
-        return "Success"
-    else:
-        print_error(f"File operation failed: {cmd['operation']} on {cmd['filename']}")
-        return None
+    if not operation_performed:
+        raise Exception(f"File operation failed: {cmd['operation']} on {cmd['filename']}")
+    print_success(f"Successfully performed {cmd['operation']} on file: {cmd['filename']}")
+    if cmd['operation'] in ['CREATE', 'UPDATE']:
+        update_file_metadata(cmd, metadata_manager, executor)
+    return "Success"
 
 
 def handle_metadata_operation(cmd, metadata_manager):
@@ -76,11 +75,9 @@ def handle_metadata_operation(cmd, metadata_manager):
             print_success(f"Updated metadata for file: {cmd['filename']}")
             return f"Updated metadata for {cmd['filename']}"
         else:
-            print_error(f"Failed to update metadata for file: {cmd['filename']}")
-            return None
+            raise Exception(f"Failed to update metadata for file: {cmd['filename']}")
     else:
-        print_error(f"Unknown operation: {cmd['operation']}")
-        return None
+        raise Exception(f"Unknown operation: {cmd['operation']}")
 
 
 def update_file_metadata(cmd, metadata_manager, executor):
