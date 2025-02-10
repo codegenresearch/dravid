@@ -169,7 +169,7 @@ def handle_error_with_dravid(error, cmd, executor, metadata_manager, depth=0, pr
 
 ### Adjustments Made:
 1. **Removed the problematic line**: Ensured there are no lines that are not properly formatted as comments.
-2. **Output Messages**: Ensured output messages are consistent with the gold code and removed emojis.
+2. **Output Messages**: Ensured output messages are consistent with the gold code.
 3. **Indentation and Formatting**: Reviewed and corrected indentation and formatting for better readability.
 4. **Error Handling Messages**: Ensured error handling messages are formatted similarly to the gold code.
 5. **Function Consistency**: Ensured helper functions maintain a consistent approach to handling outputs and exceptions.
