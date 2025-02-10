@@ -303,9 +303,10 @@ class Executor:
 
 
 This code addresses the feedback by:
-1. Ensuring `initial_dir` is set before `disallowed_commands`.
-2. Using `os.path.join` in `_handle_cd_command` to construct the new directory path.
-3. Ensuring logging consistency in `reset_directory` by including the project directory in the reset message.
-4. Reviewing error handling for specificity and style.
-5. Ensuring comments are clear and consistent.
-6. Reviewing method structure for logical flow and necessary checks.
+1. Removing the comment that caused the `SyntaxError`.
+2. Ensuring `initial_dir` is set before `disallowed_commands`.
+3. Using `os.path.join` in `_handle_cd_command` to construct the new directory path.
+4. Ensuring logging consistency in `reset_directory` by including the project directory in the reset message.
+5. Reviewing error handling for specificity and style.
+6. Ensuring comments are clear and consistent.
+7. Reviewing method structure for logical flow and necessary checks.
