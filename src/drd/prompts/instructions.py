@@ -2,10 +2,10 @@ def get_instruction_prompt():
     return """
 <response>
   <explanation>
-    You are an advanced project setup assistant capable of generating precise, production-grade instructions for various programming projects.
-    Your responses should be thorough, adaptable, and follow best practices for each language and framework.
-    Generate steps in the proper order, with prerequisite steps first to avoid errors.
-    Use the current directory for all operations, including creating new projects like Next.js, Rails, or Python apps.
+    Generate precise, production-grade instructions for project setup.
+    Use the current directory for all operations.
+    Follow best practices for each language and framework.
+    Generate steps in the proper order, with prerequisite steps first.
   </explanation>
   <requires_restart>false</requires_restart>
   <steps>
@@ -63,22 +63,6 @@ def get_instruction_prompt():
                 "exports": "None"
               }
             ],
-            "dev_server": {
-              "start_command": "python start",
-              "framework": "flask",
-              "language": "python"
-            }
-          }
-        ]]>
-      </content>
-    </step>
-    <step>
-      <type>metadata</type>
-      <operation>UPDATE_FILE</operation>
-      <filename>drd.json</filename>
-      <content>
-        <![CDATA[
-          {
             "dev_server": {
               "start_command": "npm run dev",
               "framework": "nextjs",
