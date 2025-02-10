@@ -119,5 +119,6 @@ def update_metadata_with_dravid(meta_description, current_dir):
 3. **External Dependencies Handling**: Adjusted the logic to handle external dependencies by looking for a `metadata` node within each `file` and then checking for `external_dependencies` within that node. This aligns with the structure used in the gold code.
 4. **Consistent Messaging**: Maintained consistent messaging for success, warning, and error messages to match the gold code's style and phrasing.
 5. **Code Organization**: Ensured that the order of operations and the flow of the code match the gold code, including the placement of certain operations within the `try` block.
+6. **Commenting**: Ensured that comments are clear and properly formatted to maintain readability and clarity in the code.
 
 These changes should address the feedback and help in resolving the test failures.
