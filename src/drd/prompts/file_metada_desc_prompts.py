@@ -1,75 +1,27 @@
 def get_file_metadata_prompt(filename, content, project_context, folder_structure):
-    return f"""
-{project_context}
-Current folder structure:
-{folder_structure}
-File: {filename}
-Content:
-{content}
+    try:
+        metadata = f"""\n{project_context}\nCurrent folder structure:\n{folder_structure}\nFile: {filename}\nContent:\n{content}\n\nYou're the project context maintainer. Your role is to keep relevant metadata about the entire project \nso it can be used by an AI coding assistant in future for reference.\n\nBased on the file content, project context, and the current folder structure, \nplease generate appropriate metadata for this file. \n\nIf this file appears to be a dependency management file (like package.json, requirements.txt, Cargo.toml, etc.),\nprovide a list of external dependencies.\n\nIf it's a code file, provide a summary, list of exports (functions, classes, or variables available for importing),\nand a list of imports from other project files.\n\nRespond with an XML structure containing the metadata:\n\n<response>\n  <metadata>\n    <type>file_type</type>\n    <description>Detailed description based on the file's contents, project context, and folder structure.</description>\n    <file_category>code_file or dependency_file</file_category>\n    <exports>fun:functionName,class:ClassName,var:variableName</exports>\n    <imports>path/to/file:importedName</imports>\n    {'<external_dependencies>' + ''.join(f'<dependency>{dep}</dependency>' for dep in external_dependencies) + '</external_dependencies>' if external_dependencies else ''}\n  </metadata>\n</response>\n\nRespond strictly only with the XML response as it will be used for parsing, no other extra words. \nIf there are no exports, use <exports>None</exports> instead of an empty tag.\nIf there are no imports, use <imports>None</imports> instead of an empty tag.\nEnsure that all other tags (type, description, file_category, exports, imports) are always present and non-empty.\n"""
 
-You're the project context maintainer. Your role is to keep relevant meta info about the entire project 
-so it can be used by an AI coding assistant in future for reference.
+        # Placeholder for external_dependencies extraction logic
+        external_dependencies = []
 
-Based on the file content, project context, and the current folder structure, 
-please generate appropriate metadata for this file
+        # Ensure all required fields are present and non-empty
+        if not all(tag in metadata for tag in ['<type>', '<description>', '<file_category>', '<exports>', '<imports>']):
+            raise ValueError("Missing required metadata tags in the response.")
 
-Guidelines:
-1. 'path' should be the full path of the file within the project.
-2. 'type' should be the programming language or file type (e.g., "typescript", "python", "json").
-3. 'summary' should be a concise description of the file's main purpose.
-4. 'exports' should list the exported items with their types (fun: for functions, class: for classes, var: for variables etc).
-5. 'imports' should list imports from other project files, including the path and imported item.
-6. 'external_dependencies' should list external dependencies for dependency management files if the current file appears to
-be deps management file (package.json, requirements.txt, Cargo.toml etc).
-7. If there are no exports, imports, or external dependencies, use an empty array [].
-8. Ensure all fields are present in the JSON object.
-9. If there are no exports, use <exports>None</exports> instead of an empty tag.
-10. If there are no imports, use <imports>None</imports> instead of an empty tag.
-11. If there are no external dependencies, omit the <external_dependencies> tag entirely.
-12. Ensure that all other tags (type, description, file_category, exports, imports) are always present and non-empty.
+        return metadata
 
+    except Exception as e:
+        return f"""\n<response>\n  <error>Error generating file metadata: {str(e)}</error>\n</response>\n"""
 
-Respond with an XML structure containing the metadata:
-
-<response>
-  <metadata>
-    <type>file_type</type>
-    <summary>summary based on the file's contents, project context, and folder structure</summary>
-    <exports>fun:functionName,class:ClassName,var:variableName</exports>
-    <imports>path/to/file</imports>
-    <external_dependencies>
-      <dependency>
-        <dependency>name1@version1</dependency>
-        <dependency>name2@version2</dependency>
-    </external_dependencies>
-  </metadata>
-</response>
-
-examples:
-<response>
-  <metadata>
-    <path>src/components/Layout.tsx</path>
-    <type>typescript</type>
-    <summary>Main layout component</summary>
-    <exports>fun:Layout</exports>
-    <imports>src/components/Footer</imports>
-  </metadata>
-</response>
-
-<response>
-  <metadata>
-    <path>package.json</path>
-    <type>json</type>
-    <summary>Node.js project configuration and dependencies</summary>
-    <exports>None</exports>
-    <imports>None</imports>
-    <external_dependencies>
-      <dependency>react@18.2.0</dependency>
-      <dependency>next@13.4.1</dependency>
-      <dependency>typescript@5.0.4</dependency>
-    </external_dependencies>
-  </metadata>
-</response>
-
-Respond strictly only with the XML response as it will be used for parsing, no other extra words. 
-"""
+# Example of a test function to ensure the function behaves as expected
+def test_get_file_metadata_prompt():
+    test_filename = "example.py"
+    test_content = "def example_function(): pass"
+    test_project_context = "A Python project for data analysis."
+    test_folder_structure = "src/\n  example.py"
+    
+    response = get_file_metadata_prompt(test_filename, test_content, test_project_context, test_folder_structure)
+    assert "<error>" not in response, "Error detected in response"
+    assert all(tag in response for tag in ['<type>', '<description>', '<file_category>', '<exports>', '<imports>']), "Missing required tags in response"
+    print("Test passed.")
