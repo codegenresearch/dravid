@@ -1,6 +1,4 @@
 import unittest
-import os
-import json
 from unittest.mock import patch, mock_open
 from io import StringIO
 from colorama import Fore, Style
@@ -39,7 +37,7 @@ class TestUtilityFunctions(unittest.TestCase):
     def test_print_info(self, mock_echo):
         print_info("Test info message")
         mock_echo.assert_called_with(
-            f"{Fore.BLUE} Test info message{Style.RESET_ALL}")
+            f"{Fore.YELLOW}ℹ Test info message{Style.RESET_ALL}")
 
     @patch('click.echo')
     def test_print_warning(self, mock_echo):
