@@ -1,8 +1,8 @@
 import unittest
-import sys
 from unittest.mock import patch, MagicMock, call
 from io import StringIO
 from drd.cli.monitor.output_monitor import OutputMonitor
+import time
 
 
 class TestOutputMonitor(unittest.TestCase):
@@ -17,8 +17,7 @@ class TestOutputMonitor(unittest.TestCase):
     @patch('drd.cli.monitor.output_monitor.print_prompt')
     def test_idle_state(self, mock_print_prompt, mock_print_info, mock_time, mock_select):
         # Setup
-        self.mock_monitor.should_stop.is_set.side_effect = [
-            False] * 10 + [True]
+        self.mock_monitor.should_stop.is_set.side_effect = [False] * 10 + [True]
         self.mock_monitor.process.poll.return_value = None
         self.mock_monitor.processing_input.is_set.return_value = False
         self.mock_monitor.process.stdout = MagicMock()
@@ -35,10 +34,6 @@ class TestOutputMonitor(unittest.TestCase):
 
         # Restore stdout
         sys.stdout = sys.__stdout__
-
-        # Print captured output
-        print("Captured output:")
-        print(captured_output.getvalue())
 
         # Assert
         mock_print_prompt.assert_called_once_with(
@@ -67,6 +62,37 @@ class TestOutputMonitor(unittest.TestCase):
         self.mock_monitor.error_handlers[r"Error:"].assert_called_once_with(
             "Error: Test error\n", self.mock_monitor)
 
+    @patch('select.select')
+    @patch('time.time')
+    @patch('drd.cli.monitor.output_monitor.print_info')
+    def test_monitor_output_with_delay(self, mock_print_info, mock_time, mock_select):
+        # Setup
+        self.mock_monitor.should_stop.is_set.return_value = False
+        self.mock_monitor.process.poll.return_value = None
+        self.mock_monitor.processing_input.is_set.return_value = False
+        self.mock_monitor.process.stdout = MagicMock()
+        self.mock_monitor.process.stdout.readline.side_effect = ["Line 1\n", "Line 2\n", ""]
+        mock_select.return_value = ([self.mock_monitor.process.stdout], [], [])
+        mock_time.side_effect = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-if __name__ == '__main__':
-    unittest.main()
+        # Capture stdout
+        captured_output = StringIO()
+        sys.stdout = captured_output
+
+        # Run
+        self.output_monitor._monitor_output()
+
+        # Restore stdout
+        sys.stdout = sys.__stdout__
+
+        # Assert
+        expected_output = "Line 1\nLine 2\n"
+        self.assertEqual(captured_output.getvalue(), expected_output)
+        mock_print_info.assert_has_calls([call("Line 1\n"), call("Line 2\n")], any_order=False)
+
+    def tearDown(self):
+        # Ensure all threads are cleaned up
+        if self.output_monitor.thread and self.output_monitor.thread.is_alive():
+            self.output_monitor.monitor.should_stop.set()
+            self.output_monitor.thread.join(timeout=1)
+            self.assertFalse(self.output_monitor.thread.is_alive())
