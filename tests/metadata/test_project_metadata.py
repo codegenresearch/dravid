@@ -26,27 +26,32 @@ class TestProjectMetadataManager(unittest.TestCase):
             mock_open(read_data="*.tmp\n").return_value
         ]
         with patch('builtins.open', side_effect=mock_open_calls):
-            patterns = self.manager.get_ignore_patterns()
-
-        self.assertIn('*.log', patterns)
-        self.assertIn('node_modules/', patterns)
-        self.assertIn('subfolder/*.tmp', patterns)
+            try:
+                patterns = self.manager.get_ignore_patterns()
+                self.assertIn('*.log', patterns)
+                self.assertIn('node_modules/', patterns)
+                self.assertIn('subfolder/*.tmp', patterns)
+            except Exception as e:
+                self.fail(f"Error occurred while getting ignore patterns: {str(e)}")
 
     def test_should_ignore(self):
         self.manager.ignore_patterns = [
             '*.log', 'node_modules/', 'subfolder/*.tmp']
-        self.assertTrue(self.manager.should_ignore(
-            '/fake/project/dir/test.log'))
-        self.assertTrue(self.manager.should_ignore(
-            '/fake/project/dir/node_modules/package.json'))
-        self.assertTrue(self.manager.should_ignore(
-            '/fake/project/dir/node_modules/subfolder/file.js'))
-        self.assertTrue(self.manager.should_ignore(
-            '/fake/project/dir/subfolder/test.tmp'))
-        self.assertFalse(self.manager.should_ignore(
-            '/fake/project/dir/src/main.py'))
-        self.assertFalse(self.manager.should_ignore(
-            '/fake/project/dir/package.json'))
+        try:
+            self.assertTrue(self.manager.should_ignore(
+                '/fake/project/dir/test.log'))
+            self.assertTrue(self.manager.should_ignore(
+                '/fake/project/dir/node_modules/package.json'))
+            self.assertTrue(self.manager.should_ignore(
+                '/fake/project/dir/node_modules/subfolder/file.js'))
+            self.assertTrue(self.manager.should_ignore(
+                '/fake/project/dir/subfolder/test.tmp'))
+            self.assertFalse(self.manager.should_ignore(
+                '/fake/project/dir/src/main.py'))
+            self.assertFalse(self.manager.should_ignore(
+                '/fake/project/dir/package.json'))
+        except AssertionError as e:
+            self.fail(f"Assertion failed in should_ignore: {str(e)}")
 
     @patch('os.walk')
     def test_get_directory_structure(self, mock_walk):
@@ -54,39 +59,39 @@ class TestProjectMetadataManager(unittest.TestCase):
             ('/fake/project/dir', ['src'], ['README.md']),
             ('/fake/project/dir/src', [], ['main.py', 'utils.py'])
         ]
-        structure = self.manager.get_directory_structure(self.project_dir)
-        expected_structure = {
-            'files': ['README.md'],
-            'directories': ['src'],
-            'src': {
-                'files': ['main.py', 'utils.py']
+        try:
+            structure = self.manager.get_directory_structure(self.project_dir)
+            expected_structure = {
+                'files': ['README.md'],
+                'directories': ['src'],
+                'src': {
+                    'files': ['main.py', 'utils.py']
+                }
             }
-        }
-        self.assertEqual(structure, expected_structure)
+            self.assertEqual(structure, expected_structure)
+        except AssertionError as e:
+            self.fail(f"Directory structure mismatch: {str(e)}")
 
     def test_is_binary_file(self):
-        self.assertTrue(self.manager.is_binary_file('test.exe'))
-        self.assertTrue(self.manager.is_binary_file('image.png'))
-        self.assertFalse(self.manager.is_binary_file('script.py'))
-        self.assertFalse(self.manager.is_binary_file('config.json'))
+        try:
+            self.assertTrue(self.manager.is_binary_file('test.exe'))
+            self.assertTrue(self.manager.is_binary_file('image.png'))
+            self.assertFalse(self.manager.is_binary_file('script.py'))
+            self.assertFalse(self.manager.is_binary_file('config.json'))
+        except AssertionError as e:
+            self.fail(f"Binary file check failed: {str(e)}")
 
     @patch('src.drd.metadata.project_metadata.call_dravid_api_with_pagination')
     @patch('builtins.open', new_callable=mock_open, read_data='print("Hello, World!")')
     async def test_analyze_file(self, mock_file, mock_api_call):
-        mock_api_call.return_value = '''
-        <response>
-          <metadata>
-            <type>python</type>
-            <summary>A simple Python script</summary>
-            <exports>None</exports>
-            <imports>None</imports>
-          </metadata>
-        </response>
-        '''
-        file_info = await self.manager.analyze_file('/fake/project/dir/script.py')
-        self.assertEqual(file_info['path'], 'script.py')
-        self.assertEqual(file_info['type'], 'python')
-        self.assertEqual(file_info['summary'], 'A simple Python script')
+        mock_api_call.return_value = '''\n        <response>\n          <metadata>\n            <type>python</type>\n            <description>A simple Python script</description>\n            <exports>None</exports>\n            <imports>None</imports>\n          </metadata>\n        </response>\n        '''
+        try:
+            file_info = await self.manager.analyze_file('/fake/project/dir/script.py')
+            self.assertEqual(file_info['path'], 'script.py')
+            self.assertEqual(file_info['type'], 'python')
+            self.assertEqual(file_info['summary'], 'A simple Python script')
+        except Exception as e:
+            self.fail(f"Error analyzing file: {str(e)}")
 
     @patch('src.drd.metadata.project_metadata.ProjectMetadataManager.analyze_file')
     @patch('os.walk')
@@ -105,8 +110,38 @@ class TestProjectMetadataManager(unittest.TestCase):
             None  # Simulating skipping README.md
         ]
         loader = MagicMock()
-        metadata = await self.manager.build_metadata(loader)
+        try:
+            metadata = await self.manager.build_metadata(loader)
+            self.assertEqual(metadata['environment']['primary_language'], 'python')
+            self.assertEqual(len(metadata['key_files']), 1)
+            self.assertEqual(metadata['key_files'][0]['path'], 'main.py')
+        except Exception as e:
+            self.fail(f"Error building metadata: {str(e)}")
 
-        self.assertEqual(metadata['environment']['primary_language'], 'python')
-        self.assertEqual(len(metadata['key_files']), 1)
-        self.assertEqual(metadata['key_files'][0]['path'], 'main.py')
+    @patch('os.walk')
+    def test_get_ignore_patterns_with_no_gitignore(self, mock_walk):
+        mock_walk.return_value = [
+            ('/fake/project/dir', [], []),
+            ('/fake/project/dir/subfolder', [], [])
+        ]
+        try:
+            patterns = self.manager.get_ignore_patterns()
+            expected_patterns = ['.*']
+            self.assertEqual(patterns, expected_patterns)
+        except Exception as e:
+            self.fail(f"Error occurred while getting ignore patterns without .gitignore: {str(e)}")
+
+    @patch('os.walk')
+    def test_get_directory_structure_with_empty_directory(self, mock_walk):
+        mock_walk.return_value = [
+            ('/fake/project/dir', [], [])
+        ]
+        try:
+            structure = self.manager.get_directory_structure(self.project_dir)
+            expected_structure = {
+                'files': [],
+                'directories': []
+            }
+            self.assertEqual(structure, expected_structure)
+        except AssertionError as e:
+            self.fail(f"Directory structure mismatch for empty directory: {str(e)}")
