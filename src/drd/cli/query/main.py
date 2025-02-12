@@ -70,7 +70,8 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt):
             xml_result = stream_dravid_api(
                 full_query, include_context=True, instruction_prompt=instruction_prompt, print_chunk=False)
             commands = parse_dravid_response(xml_result)
-            # return None
+            print_debug("commands")
+            print_info(commands)
             if debug:
                 print_debug(f"Received {len(commands)} new command(s)")
 
@@ -90,7 +91,8 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt):
             print_error(f"Failed to execute command at step {step_completed}.")
             print_error(f"Error message: {error_message}")
             print_info("Attempting to fix the error...")
-            if handle_error_with_dravid(Exception(error_message), commands[step_completed-1], executor, metadata_manager, debug=debug):
+            error_handled = handle_error_with_dravid(error_message, commands[step_completed-1], executor, metadata_manager, debug=debug)
+            if error_handled:
                 print_info(
                     "Fix applied successfully. Continuing with the remaining commands.")
                 # Re-execute the remaining commands
@@ -108,6 +110,28 @@ def execute_dravid_command(query, image_path, debug, instruction_prompt):
         print_success("Dravid CLI tool execution completed.")
     except Exception as e:
         print_error(f"An unexpected error occurred: {str(e)}")
+        if debug:
+            import traceback
+            traceback.print_exc()
+
+
+def update_metadata(metadata_manager, key, value):
+    try:
+        metadata_manager.update_metadata({key: value})
+        print_success(f"Metadata updated successfully: {key} = {value}")
+    except Exception as e:
+        print_error(f"Failed to update metadata: {str(e)}")
+        if debug:
+            import traceback
+            traceback.print_exc()
+
+
+def init_metadata(metadata_manager):
+    try:
+        metadata_manager.initialize_metadata()
+        print_success("Metadata initialized successfully.")
+    except Exception as e:
+        print_error(f"Failed to initialize metadata: {str(e)}")
         if debug:
             import traceback
             traceback.print_exc()
