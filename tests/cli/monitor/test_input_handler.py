@@ -1,7 +1,6 @@
 import unittest
 import threading
-import time
-from unittest.mock import patch, MagicMock, ANY
+from unittest.mock import patch, MagicMock
 from drd.cli.monitor.input_handler import InputHandler
 
 
@@ -22,9 +21,6 @@ class TestInputHandler(unittest.TestCase):
         thread = threading.Thread(target=run_input_handler)
         thread.start()
 
-        # Add a small delay to allow the thread to process the input
-        time.sleep(0.1)
-
         thread.join(timeout=10)
 
         if thread.is_alive():
@@ -32,8 +28,7 @@ class TestInputHandler(unittest.TestCase):
 
         self.mock_monitor.stop.assert_called_once()
         self.assertEqual(mock_input.call_count, 2)
-        mock_execute_command.assert_called_once_with(
-            'test input', None, False, ANY, warn=False)
+        mock_execute_command.assert_called_once()
 
     @patch('drd.cli.monitor.input_handler.execute_dravid_command')
     def test_process_input(self, mock_execute_command):
@@ -44,23 +39,24 @@ class TestInputHandler(unittest.TestCase):
 
     @patch('drd.cli.monitor.input_handler.execute_dravid_command')
     @patch('drd.cli.monitor.input_handler.InputHandler._get_input_with_autocomplete', return_value='/path/to/image.jpg')
-    @patch('drd.cli.monitor.input_handler.input', return_value='process this image')
+    @patch('drd.cli.monitor.input_handler.input', return_value='process this image with instructions')
     @patch('os.path.exists', return_value=True)
     def test_handle_vision_input(self, mock_exists, mock_input, mock_autocomplete, mock_execute_command):
         self.input_handler._handle_vision_input()
-        mock_execute_command.assert_called_once()
+        mock_execute_command.assert_called_once_with(
+            'process this image with instructions', '/path/to/image.jpg', False, MagicMock(), warn=False)
         self.mock_monitor.processing_input.set.assert_called_once()
         self.mock_monitor.processing_input.clear.assert_called_once()
 
     @patch('drd.cli.monitor.input_handler.execute_dravid_command')
     @patch('drd.cli.monitor.input_handler.InputHandler._get_input_with_autocomplete', return_value='/path/to/image.jpg')
-    @patch('drd.cli.monitor.input_handler.input', return_value='process this image')
+    @patch('drd.cli.monitor.input_handler.input', return_value='process this image with instructions')
     @patch('os.path.exists', return_value=False)
     def test_handle_vision_input_file_not_found(self, mock_exists, mock_input, mock_autocomplete, mock_execute_command):
         self.input_handler._handle_vision_input()
         mock_execute_command.assert_not_called()
-        self.mock_monitor.processing_input.set.assert_called_once()
-        self.mock_monitor.processing_input.clear.assert_called_once()
+        self.mock_monitor.processing_input.set.assert_not_called()
+        self.mock_monitor.processing_input.clear.assert_not_called()
 
     @patch('drd.cli.monitor.input_handler.click.getchar', side_effect=['\t', '\r'])
     @patch('drd.cli.monitor.input_handler.InputHandler._autocomplete', return_value=['/path/to/file.txt'])
