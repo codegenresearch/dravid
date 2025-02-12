@@ -1,12 +1,11 @@
 import unittest
 from unittest.mock import patch, mock_open, MagicMock
 import os
-import sys
-import json
 from datetime import datetime
 
 # Assuming the project structure, adjust the import path as necessary
 from src.drd.metadata.project_metadata import ProjectMetadataManager
+import xml.etree.ElementTree as ET
 
 
 class TestProjectMetadataManager(unittest.TestCase):
@@ -73,16 +72,7 @@ class TestProjectMetadataManager(unittest.TestCase):
     @patch('src.drd.metadata.project_metadata.call_dravid_api_with_pagination')
     @patch('builtins.open', new_callable=mock_open, read_data='print("Hello, World!")')
     async def test_analyze_file(self, mock_file, mock_api_call):
-        mock_api_call.return_value = '''
-        <response>
-          <metadata>
-            <type>python</type>
-            <summary>A simple Python script</summary>
-            <exports>None</exports>
-            <imports>None</imports>
-          </metadata>
-        </response>
-        '''
+        mock_api_call.return_value = '''\n        <response>\n          <metadata>\n            <type>python</type>\n            <description>A simple Python script</description>\n            <exports>None</exports>\n            <imports>None</imports>\n          </metadata>\n        </response>\n        '''
         file_info = await self.manager.analyze_file('/fake/project/dir/script.py')
         self.assertEqual(file_info['path'], 'script.py')
         self.assertEqual(file_info['type'], 'python')
@@ -107,6 +97,6 @@ class TestProjectMetadataManager(unittest.TestCase):
         loader = MagicMock()
         metadata = await self.manager.build_metadata(loader)
 
-        self.assertEqual(metadata['environment']['primary_language'], 'python')
-        self.assertEqual(len(metadata['key_files']), 1)
-        self.assertEqual(metadata['key_files'][0]['path'], 'main.py')
+        self.assertEqual(metadata['project']['primary_language'], 'python')
+        self.assertEqual(len(metadata['files']), 1)
+        self.assertEqual(metadata['files'][0]['path'], 'main.py')
