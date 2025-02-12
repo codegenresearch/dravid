@@ -11,7 +11,6 @@ MAX_CONCURRENT_REQUESTS = 10
 MAX_CALLS_PER_MINUTE = 100
 RATE_LIMIT_PERIOD = 60  # seconds
 
-
 class RateLimiter:
     def __init__(self, max_calls, period):
         self.max_calls = max_calls
@@ -29,9 +28,7 @@ class RateLimiter:
             await self.calls.put(time.time())
             return
 
-
 rate_limiter = RateLimiter(MAX_CALLS_PER_MINUTE, RATE_LIMIT_PERIOD)
-
 
 def to_thread(func, *args, **kwargs):
     if sys.version_info >= (3, 9):
@@ -40,7 +37,6 @@ def to_thread(func, *args, **kwargs):
         loop = asyncio.get_event_loop()
         return loop.run_in_executor(None, functools.partial(func, *args, **kwargs))
 
-
 async def process_single_file(filename, content, project_context, folder_structure):
     metadata_query = get_file_metadata_prompt(
         filename, content, project_context, folder_structure)
@@ -48,32 +44,34 @@ async def process_single_file(filename, content, project_context, folder_structu
         async with rate_limiter.semaphore:
             await rate_limiter.acquire()
             response = await to_thread(call_dravid_api_with_pagination, metadata_query, include_context=True)
+
         root = extract_and_parse_xml(response)
-        type_elem = root.find('.//type')
-        summary_elem = root.find('.//summary')
-        exports_elem = root.find('.//exports')
-        imports_elem = root.find('.//imports')  # Added imports_elem
-        file_type = type_elem.text.strip(
-        ) if type_elem is not None and type_elem.text else "unknown"
-        summary = summary_elem.text.strip(
-        ) if summary_elem is not None and summary_elem.text else "No summary available"
-        exports = exports_elem.text.strip(
-        ) if exports_elem is not None and exports_elem.text else ""
-        imports = imports_elem.text.strip(
-        ) if imports_elem is not None and imports_elem.text else ""  # Added imports
+        metadata = root.find('.//metadata')
+        if metadata is None:
+            raise ValueError("Metadata section not found in the response")
+
+        type_elem = metadata.find('type')
+        desc_elem = metadata.find('description')
+        exports_elem = metadata.find('exports')
+        imports_elem = metadata.find('imports')
+
+        file_type = type_elem.text.strip() if type_elem is not None and type_elem.text else "unknown"
+        description = desc_elem.text.strip() if desc_elem is not None and desc_elem.text else "No description available"
+        exports = exports_elem.text.strip() if exports_elem is not None and exports_elem.text else ""
+        imports = imports_elem.text.strip() if imports_elem is not None and imports_elem.text else ""
+
         print_success(f"Processed: {filename}")
-        # Added imports to return tuple
-        return filename, file_type, summary, exports, imports
+        return filename, file_type, description, exports, imports
+    except ValueError as ve:
+        print_error(f"Value error processing {filename}: {ve}")
+        return filename, "unknown", f"Value error: {ve}", "", ""
     except Exception as e:
         print_error(f"Error processing {filename}: {e}")
-        # Added empty string for imports in error case
         return filename, "unknown", f"Error: {e}", "", ""
-
 
 async def process_files(files, project_context, folder_structure):
     total_files = len(files)
-    print_info(
-        f"Processing {total_files} files to construct metadata per file")
+    print_info(f"Processing {total_files} files to construct metadata per file")
     print_info(f"LLM calls to be made: {total_files}")
 
     async def process_batch(batch):
