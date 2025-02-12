@@ -15,10 +15,58 @@ class TestOutputMonitor(unittest.TestCase):
     @patch('time.time')
     @patch('drd.cli.monitor.output_monitor.print_info')
     @patch('drd.cli.monitor.output_monitor.print_prompt')
-    def test_idle_state(self, mock_print_prompt, mock_print_info, mock_time, mock_select):
+    def test_idle_state_with_no_output(self, mock_print_prompt, mock_print_info, mock_time, mock_select):
         # Setup
-        self.mock_monitor.should_stop.is_set.side_effect = [
-            False] * 10 + [True]
+        self.mock_monitor.should_stop.is_set.side_effect = [False] * 10 + [True]
+        self.mock_monitor.process.poll.return_value = None
+        self.mock_monitor.processing_input.is_set.return_value = False
+        self.mock_monitor.process.stdout = MagicMock()
+        self.mock_monitor.process.stdout.readline.return_value = ""
+        mock_select.return_value = ([self.mock_monitor.process.stdout], [], [])
+
+        # Create a function to generate increasing time values
+        start_time = 1000000  # Start with a large value to avoid negative times
+
+        def time_sequence():
+            nonlocal start_time
+            start_time += 1  # Increment by 1 second each time
+            return start_time
+
+        mock_time.side_effect = time_sequence
+
+        # Capture stdout
+        captured_output = StringIO()
+        sys.stdout = captured_output
+
+        # Run
+        self.output_monitor._monitor_output()
+
+        # Restore stdout
+        sys.stdout = sys.__stdout__
+
+        # Print captured output
+        print("Captured output:")
+        print(captured_output.getvalue())
+
+        # Assert
+        mock_print_prompt.assert_called_once_with(
+            "\nNo more tasks to auto-process. What can I do next?")
+        expected_calls = [
+            call("\nAvailable actions:"),
+            call("1. Give a coding instruction to perform"),
+            call("2. Process an image (type 'vision')"),
+            call("3. Exit monitoring mode (type 'exit')"),
+            call("\nType your choice or command:")
+        ]
+        mock_print_info.assert_has_calls(expected_calls, any_order=True)
+
+    @patch('select.select')
+    @patch('time.time')
+    @patch('drd.cli.monitor.output_monitor.print_info')
+    @patch('drd.cli.monitor.output_monitor.print_prompt')
+    def test_idle_state_with_delayed_output(self, mock_print_prompt, mock_print_info, mock_time, mock_select):
+        # Setup
+        self.mock_monitor.should_stop.is_set.side_effect = [False] * 10 + [True]
         self.mock_monitor.process.poll.return_value = None
         self.mock_monitor.processing_input.is_set.return_value = False
         self.mock_monitor.process.stdout = MagicMock()
@@ -52,11 +100,13 @@ class TestOutputMonitor(unittest.TestCase):
         ]
         mock_print_info.assert_has_calls(expected_calls, any_order=True)
 
-    def test_check_for_errors(self):
+    @patch('drd.cli.monitor.output_monitor.print_error')
+    def test_check_for_errors(self, mock_print_error):
         # Setup
         error_buffer = ["Error: Test error\n"]
+        error_handler = MagicMock()
         self.mock_monitor.error_handlers = {
-            r"Error:": MagicMock()
+            r"Error:": error_handler
         }
 
         # Run
@@ -64,9 +114,25 @@ class TestOutputMonitor(unittest.TestCase):
             "Error: Test error\n", error_buffer)
 
         # Assert
-        self.mock_monitor.error_handlers[r"Error:"].assert_called_once_with(
+        error_handler.assert_called_once_with(
             "Error: Test error\n", self.mock_monitor)
+        mock_print_error.assert_not_called()  # Ensure no additional error is printed
 
+    @patch('drd.cli.monitor.output_monitor.print_error')
+    def test_check_for_errors_with_no_matching_pattern(self, mock_print_error):
+        # Setup
+        error_buffer = ["Error: Test error\n"]
+        self.mock_monitor.error_handlers = {
+            r"Warning:": MagicMock()
+        }
+
+        # Run
+        self.output_monitor._check_for_errors(
+            "Error: Test error\n", error_buffer)
+
+        # Assert
+        mock_print_error.assert_called_once_with(
+            "Error: No matching error handler found for 'Error: Test error\n'")
 
 if __name__ == '__main__':
     unittest.main()
