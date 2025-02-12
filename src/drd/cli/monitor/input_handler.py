@@ -1,4 +1,5 @@
 import threading
+import time
 import click
 import os
 import glob
@@ -25,6 +26,7 @@ class InputHandler:
                 self.monitor.stop()
                 break
             self._process_input(user_input)
+            time.sleep(0.1)  # Add a small delay for thread synchronization
 
     def _process_input(self, user_input):
         if user_input.lower() == 'p':
@@ -33,28 +35,19 @@ class InputHandler:
 
         if user_input:
             self.monitor.processing_input.set()
-            try:
-                self._handle_general_input(user_input)
-            finally:
-                self.monitor.processing_input.clear()
+            self._handle_general_input(user_input)
+            self.monitor.processing_input.clear()
 
     def _handle_vision_input(self):
         print_info(
             "Enter the image path and instructions (use Tab for autocomplete):")
         user_input = self._get_input_with_autocomplete()
-
-        self.monitor.processing_input.set()
-        try:
-            self._handle_general_input(user_input)
-        finally:
-            self.monitor.processing_input.clear()
+        self._handle_general_input(user_input)
 
     def _handle_general_input(self, user_input):
         # Regex to extract image path and instructions
         image_pattern = r"([a-zA-Z0-9._/-]+(?:/|\\)?)+\.(jpg|jpeg|png|bmp|gif)"
         match = re.search(image_pattern, user_input)
-        instruction_prompt = get_instruction_prompt()
-
         if match:
             image_path = match.group(0)
             instructions = user_input.replace(image_path, "").strip()
@@ -64,13 +57,24 @@ class InputHandler:
                 print_error(f"Image file not found: {image_path}")
                 return
 
-            print_info(f"Processing image: {image_path}")
-            print_info(f"With instructions: {instructions}")
-            execute_dravid_command(
-                instructions, image_path, False, instruction_prompt, warn=False)
+            instruction_prompt = get_instruction_prompt()
+            self.monitor.processing_input.set()
+            try:
+                print_info(f"Processing image: {image_path}")
+                print_info(f"With instructions: {instructions}")
+                execute_dravid_command(
+                    instructions, image_path, False, instruction_prompt, warn=False)
+                print_info(f"Successfully processed image: {image_path}")
+            except Exception as e:
+                print_error(f"Error processing image input: {str(e)}")
+            finally:
+                self.monitor.processing_input.clear()
+                time.sleep(0.1)  # Add a small delay for thread synchronization
         else:
+            instruction_prompt = get_instruction_prompt()
             execute_dravid_command(
                 user_input, None, False, instruction_prompt, warn=False)
+            print_info(f"Executed command: {user_input}")
 
     def _get_input_with_autocomplete(self):
         current_input = ""
