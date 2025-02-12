@@ -16,10 +16,8 @@ class ProjectMetadataManager:
         self.metadata_file = os.path.join(self.project_dir, 'drd.json')
         self.metadata = self.load_metadata()
         self.ignore_patterns = self.get_ignore_patterns()
-        self.binary_extensions = {
-            '.pyc', '.pyo', '.so', '.dll', '.exe', '.bin'}
-        self.image_extensions = {'.jpg', '.jpeg',
-                                 '.png', '.gif', '.bmp', '.svg', '.ico'}
+        self.binary_extensions = {'.pyc', '.pyo', '.so', '.dll', '.exe', '.bin'}
+        self.image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.ico'}
 
     def load_metadata(self):
         if os.path.exists(self.metadata_file):
@@ -28,7 +26,7 @@ class ProjectMetadataManager:
 
         new_metadata = {
             "project_info": {
-                "name":  os.path.basename(self.project_dir),
+                "name": os.path.basename(self.project_dir),
                 "version": "1.0.0",
                 "description": "",
                 "last_updated": datetime.now().isoformat()
@@ -84,7 +82,6 @@ class ProjectMetadataManager:
 
             for pattern in self.ignore_patterns:
                 if pattern.endswith('/'):
-                    # It's a directory pattern
                     if rel_path.startswith(pattern) or rel_path.startswith(pattern[:-1]):
                         return True
                 elif fnmatch.fnmatch(rel_path, pattern):
@@ -101,8 +98,7 @@ class ProjectMetadataManager:
                 continue
             path = os.path.relpath(root, start_path)
             if path == '.':
-                structure['files'] = [
-                    f for f in files if not self.should_ignore(os.path.join(root, f))]
+                structure['files'] = [f for f in files if not self.should_ignore(os.path.join(root, f))]
                 structure['directories'] = []
             else:
                 parts = path.split(os.sep)
@@ -147,10 +143,8 @@ class ProjectMetadataManager:
             with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
 
-            prompt = get_file_metadata_prompt(rel_path, content, json.dumps(
-                self.metadata), json.dumps(self.metadata['directory_structure']))
-            response = call_dravid_api_with_pagination(
-                prompt, include_context=True)
+            prompt = get_file_metadata_prompt(rel_path, content, json.dumps(self.metadata), json.dumps(self.metadata['directory_structure']))
+            response = call_dravid_api_with_pagination(prompt, include_context=True)
 
             root = ET.fromstring(response)
             metadata = root.find('metadata')
@@ -159,14 +153,14 @@ class ProjectMetadataManager:
                 "path": rel_path,
                 "type": metadata.find('type').text,
                 "summary": metadata.find('summary').text,
-                "exports": metadata.find('exports').text.split(',') if metadata.find('exports').text != 'None' else [],
-                "imports": metadata.find('imports').text.split(',') if metadata.find('imports').text != 'None' else []
+                "exports": [dep.text for dep in metadata.findall('exports/dependency')] if metadata.find('exports') is not None else [],
+                "imports": [dep.text for dep in metadata.findall('imports/dependency')] if metadata.find('imports') is not None else []
             }
 
             dependencies = metadata.find('external_dependencies')
             if dependencies is not None:
                 for dep in dependencies.findall('dependency'):
-                    self.metadata['external_dependencies'].append(dep.text)
+                    self.add_external_dependency(dep.text)
 
         except Exception as e:
             print_warning(f"Error analyzing file {file_path}: {str(e)}")
@@ -181,8 +175,7 @@ class ProjectMetadataManager:
         return file_info
 
     async def build_metadata(self, loader):
-        total_files = sum([len(files) for root, _, files in os.walk(
-            self.project_dir) if not self.should_ignore(root)])
+        total_files = sum([len(files) for root, _, files in os.walk(self.project_dir) if not self.should_ignore(root)])
         processed_files = 0
 
         for root, _, files in os.walk(self.project_dir):
@@ -198,13 +191,10 @@ class ProjectMetadataManager:
                     loader.message = f"Analyzing files ({processed_files}/{total_files})"
 
         # Determine languages
-        all_languages = set(file['type'] for file in self.metadata['key_files']
-                            if file['type'] not in ['binary', 'unknown'])
+        all_languages = set(file['type'] for file in self.metadata['key_files'] if file['type'] not in ['binary', 'unknown'])
         if all_languages:
-            self.metadata['environment']['primary_language'] = max(all_languages, key=lambda x: sum(
-                1 for file in self.metadata['key_files'] if file['type'] == x))
-            self.metadata['environment']['other_languages'] = list(
-                all_languages - {self.metadata['environment']['primary_language']})
+            self.metadata['environment']['primary_language'] = max(all_languages, key=lambda x: sum(1 for file in self.metadata['key_files'] if file['type'] == x))
+            self.metadata['environment']['other_languages'] = list(all_languages - {self.metadata['environment']['primary_language']})
 
         self.metadata['project_info']['last_updated'] = datetime.now().isoformat()
 
@@ -212,8 +202,7 @@ class ProjectMetadataManager:
 
     def remove_file_metadata(self, filename):
         self.metadata['project_info']['last_updated'] = datetime.now().isoformat()
-        self.metadata['key_files'] = [
-            f for f in self.metadata['key_files'] if f['path'] != filename]
+        self.metadata['key_files'] = [f for f in self.metadata['key_files'] if f['path'] != filename]
         self.save_metadata()
 
     def get_file_metadata(self, filename):
@@ -236,49 +225,16 @@ class ProjectMetadataManager:
         })
         self.save_metadata()
 
-    def update_file_metadata(self, filename, file_type, content, description=None, exports=None, imports=None):
+    def update_file_metadata(self, filename, file_type, summary=None, exports=None, imports=None):
         self.metadata['project_info']['last_updated'] = datetime.now().isoformat()
-        file_entry = next(
-            (f for f in self.metadata['key_files'] if f['path'] == filename), None)
+        file_entry = next((f for f in self.metadata['key_files'] if f['path'] == filename), None)
         if file_entry is None:
             file_entry = {'path': filename}
             self.metadata['key_files'].append(file_entry)
         file_entry.update({
             'type': file_type,
-            'summary': description or file_entry.get('summary', ''),
-            'exports': exports or [],
-            'imports': imports or []
+            'summary': summary or file_entry.get('summary', ''),
+            'exports': exports or file_entry.get('exports', []),
+            'imports': imports or file_entry.get('imports', [])
         })
         self.save_metadata()
-
-    def update_metadata_from_file(self):
-        if os.path.exists(self.metadata_file):
-            with open(self.metadata_file, 'r') as f:
-                content = f.read()
-            try:
-                new_metadata = json.loads(content)
-                # Update dev server info if present
-                if 'dev_server' in new_metadata:
-                    self.metadata['dev_server'] = new_metadata['dev_server']
-                # Update other metadata fields
-                for key, value in new_metadata.items():
-                    if key != 'files':  # We'll handle files separately
-                        self.metadata[key] = value
-                # Update file metadata
-                if 'files' in new_metadata:
-                    for file_entry in new_metadata['files']:
-                        filename = file_entry['filename']
-                        file_type = file_entry.get(
-                            'type', filename.split('.')[-1])
-                        file_content = file_entry.get('content', '')
-                        description = file_entry.get('description', '')
-                        exports = file_entry.get('exports', [])
-                        imports = file_entry.get('imports', [])
-                        self.update_file_metadata(
-                            filename, file_type, file_content, description, exports, imports)
-                self.save_metadata()
-                return True
-            except json.JSONDecodeError:
-                print(f"Error: Invalid JSON content in {self.metadata_file}")
-                return False
-        return False
