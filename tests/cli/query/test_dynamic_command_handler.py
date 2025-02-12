@@ -36,13 +36,13 @@ class TestDynamicCommandHandler(unittest.TestCase):
             success, steps_completed, error, output = execute_commands(
                 commands, self.executor, self.metadata_manager, debug=True)
 
-        self.assertTrue(success)
-        self.assertEqual(steps_completed, 3)
-        self.assertIsNone(error)
-        self.assertIn("Explanation - Test explanation", output)
-        self.assertIn("Shell command - echo \"Hello\"", output)
-        self.assertIn("File command - CREATE - test.txt", output)
-        mock_print_debug.assert_called_with("Completed step 3/3")
+        self.assertTrue(success, "Execution should be successful")
+        self.assertEqual(steps_completed, 3, "All steps should be completed")
+        self.assertIsNone(error, "No error should be raised")
+        self.assertIn("Explanation - Test explanation", output, "Explanation should be included in output")
+        self.assertIn("Shell command - echo \"Hello\"", output, "Shell command should be included in output")
+        self.assertIn("File command - CREATE - test.txt", output, "File command should be included in output")
+        mock_print_debug.assert_called_with("Completed step 3/3", "Debug message should indicate completion of all steps")
 
     @patch('drd.cli.query.dynamic_command_handler.print_info')
     @patch('drd.cli.query.dynamic_command_handler.print_success')
@@ -53,12 +53,11 @@ class TestDynamicCommandHandler(unittest.TestCase):
 
         output = handle_shell_command(cmd, self.executor)
 
-        self.assertEqual(output, "Hello")
-        self.executor.execute_shell_command.assert_called_once_with(
-            'echo "Hello"')
-        mock_print_success.assert_called_once_with(
-            'Successfully executed: echo "Hello"')
-        mock_echo.assert_called_once_with('Command output:\nHello')
+        self.assertEqual(output, "Hello", "Output should match the command result")
+        self.executor.execute_shell_command.assert_called_once_with('echo "Hello"', "Command should be executed once")
+        mock_print_info.assert_called_once_with('Executing shell command: echo "Hello"', "Info message should indicate command execution")
+        mock_print_success.assert_called_once_with('Successfully executed: echo "Hello"', "Success message should confirm execution")
+        mock_echo.assert_called_once_with('Command output:\nHello', "Echo should display command output")
 
     @patch('drd.cli.query.dynamic_command_handler.print_info')
     @patch('drd.cli.query.dynamic_command_handler.print_success')
@@ -71,11 +70,9 @@ class TestDynamicCommandHandler(unittest.TestCase):
         output = handle_file_operation(
             cmd, self.executor, self.metadata_manager)
 
-        self.assertEqual(output, "Success")
-        self.executor.perform_file_operation.assert_called_once_with(
-            'CREATE', 'test.txt', 'Test content', force=True)
-        mock_update_metadata.assert_called_once_with(
-            cmd, self.metadata_manager, self.executor)
+        self.assertEqual(output, "Success", "Output should indicate success")
+        self.executor.perform_file_operation.assert_called_once_with('CREATE', 'test.txt', 'Test content', force=True, "File operation should be performed once with correct parameters")
+        mock_update_metadata.assert_called_once_with(cmd, self.metadata_manager, self.executor, "Metadata should be updated")
 
     @patch('drd.cli.query.dynamic_command_handler.generate_file_description')
     def test_update_file_metadata(self, mock_generate_description):
@@ -85,12 +82,12 @@ class TestDynamicCommandHandler(unittest.TestCase):
 
         update_file_metadata(cmd, self.metadata_manager, self.executor)
 
-        self.metadata_manager.get_project_context.assert_called_once()
-        self.executor.get_folder_structure.assert_called_once()
+        self.metadata_manager.get_project_context.assert_called_once_with("Project context should be retrieved once")
+        self.executor.get_folder_structure.assert_called_once_with("Folder structure should be retrieved once")
         mock_generate_description.assert_called_once_with(
-            'test.txt', 'Test content', self.metadata_manager.get_project_context(), self.executor.get_folder_structure())
+            'test.txt', 'Test content', self.metadata_manager.get_project_context(), self.executor.get_folder_structure(), "File description should be generated once with correct parameters")
         self.metadata_manager.update_file_metadata.assert_called_once_with(
-            'test.txt', 'python', 'Test content', 'Test file', ['test_function'])
+            'test.txt', 'python', 'Test content', 'Test file', ['test_function'], "Metadata should be updated once with correct parameters")
 
     @patch('drd.cli.query.dynamic_command_handler.print_error')
     @patch('drd.cli.query.dynamic_command_handler.print_info')
@@ -110,11 +107,12 @@ class TestDynamicCommandHandler(unittest.TestCase):
         result = handle_error_with_dravid(
             error, cmd, self.executor, self.metadata_manager)
 
-        self.assertTrue(result)
-        mock_call_api.assert_called_once()
-        mock_execute_commands.assert_called_once()
+        self.assertTrue(result, "Error handling should be successful")
+        mock_call_api.assert_called_once_with("API should be called once to get fix commands")
+        mock_execute_commands.assert_called_once_with(
+            [{'type': 'shell', 'command': "echo 'Fixed'"}], self.executor, self.metadata_manager, is_fix=True, debug=False, "Fix commands should be executed once")
         mock_print_success.assert_called_with(
-            "All fix steps successfully applied.")
+            "All fix steps successfully applied.", "Success message should confirm successful fix application")
 
     @patch('drd.cli.query.dynamic_command_handler.print_info')
     @patch('drd.cli.query.dynamic_command_handler.print_success')
@@ -125,17 +123,19 @@ class TestDynamicCommandHandler(unittest.TestCase):
 
         output = handle_shell_command(cmd, self.executor)
 
-        self.assertEqual(output, "Skipping this step...")
+        self.assertEqual(output, "Skipping this step...", "Output should indicate skipped step")
         self.executor.execute_shell_command.assert_called_once_with(
-            'echo "Hello"')
-        mock_print_info.assert_any_call("Skipping this step...")
-        mock_print_success.assert_not_called()
-        mock_echo.assert_not_called()
+            'echo "Hello"', "Command should be executed once")
+        mock_print_info.assert_any_call(
+            'Executing shell command: echo "Hello"', "Info message should indicate command execution")
+        mock_print_info.assert_any_call("Skipping this step...", "Info message should indicate skipped step")
+        mock_print_success.assert_not_called("Success message should not be printed for skipped step")
+        mock_echo.assert_not_called("Echo should not display output for skipped step")
 
     @patch('drd.cli.query.dynamic_command_handler.print_step')
     @patch('drd.cli.query.dynamic_command_handler.print_info')
     @patch('drd.cli.query.dynamic_command_handler.print_debug')
-    def test_execute_commands(self, mock_print_debug, mock_print_info, mock_print_step):
+    def test_execute_commands_with_detailed_debug(self, mock_print_debug, mock_print_info, mock_print_step):
         commands = [
             {'type': 'explanation', 'content': 'Test explanation'},
             {'type': 'shell', 'command': 'echo "Hello"'},
@@ -150,16 +150,16 @@ class TestDynamicCommandHandler(unittest.TestCase):
             success, steps_completed, error, output = execute_commands(
                 commands, self.executor, self.metadata_manager, debug=True)
 
-        self.assertTrue(success)
-        self.assertEqual(steps_completed, 3)
-        self.assertIsNone(error)
-        self.assertIn("Explanation - Test explanation", output)
-        self.assertIn("Shell command - echo \"Hello\"", output)
-        self.assertIn("File command -  CREATE", output)
+        self.assertTrue(success, "Execution should be successful")
+        self.assertEqual(steps_completed, 3, "All steps should be completed")
+        self.assertIsNone(error, "No error should be raised")
+        self.assertIn("Explanation - Test explanation", output, "Explanation should be included in output")
+        self.assertIn("Shell command - echo \"Hello\"", output, "Shell command should be included in output")
+        self.assertIn("File command - CREATE - test.txt", output, "File command should be included in output")
         mock_print_debug.assert_has_calls([
-            call("Completed step 1/3"),
-            call("Completed step 2/3"),
-            call("Completed step 3/3")
+            call("Completed step 1/3", "Debug message should indicate completion of step 1"),
+            call("Completed step 2/3", "Debug message should indicate completion of step 2"),
+            call("Completed step 3/3", "Debug message should indicate completion of step 3")
         ])
 
     @patch('drd.cli.query.dynamic_command_handler.print_step')
@@ -179,15 +179,15 @@ class TestDynamicCommandHandler(unittest.TestCase):
             success, steps_completed, error, output = execute_commands(
                 commands, self.executor, self.metadata_manager, debug=True)
 
-        self.assertTrue(success)
-        self.assertEqual(steps_completed, 3)
-        self.assertIsNone(error)
-        self.assertIn("Explanation - Test explanation", output)
-        self.assertIn("Skipping this step...", output)
-        mock_print_info.assert_any_call("Step 2/3: Skipping this step...")
-        mock_print_info.assert_any_call("Step 3/3: Skipping this step...")
+        self.assertTrue(success, "Execution should be successful")
+        self.assertEqual(steps_completed, 3, "All steps should be completed")
+        self.assertIsNone(error, "No error should be raised")
+        self.assertIn("Explanation - Test explanation", output, "Explanation should be included in output")
+        self.assertIn("Skipping this step...", output, "Skipped step message should be included in output")
+        mock_print_info.assert_any_call("Step 2/3: Skipping this step...", "Info message should indicate skipped step 2")
+        mock_print_info.assert_any_call("Step 3/3: Skipping this step...", "Info message should indicate skipped step 3")
         mock_print_debug.assert_has_calls([
-            call("Completed step 1/3"),
-            call("Completed step 2/3"),
-            call("Completed step 3/3")
+            call("Completed step 1/3", "Debug message should indicate completion of step 1"),
+            call("Completed step 2/3", "Debug message should indicate completion of step 2"),
+            call("Completed step 3/3", "Debug message should indicate completion of step 3")
         ])
