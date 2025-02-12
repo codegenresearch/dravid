@@ -2,7 +2,7 @@ import re
 import threading
 import time
 import select
-from ...utils import print_info, print_error, print_prompt
+from ...utils import print_info, print_error
 
 MAX_RETRIES = 3
 
@@ -80,8 +80,7 @@ class OutputMonitor:
         if (time_since_last_output > 5 and
             not self.idle_prompt_shown and
                 not self.monitor.processing_input.is_set()):
-            print_prompt(
-                "\nNo more tasks to auto-process. What can I do next?")
+            print_info("\nNo more tasks to auto-process. What can I do next?")
             self._show_options()
             self.idle_prompt_shown = True
 
