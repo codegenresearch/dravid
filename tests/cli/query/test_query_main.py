@@ -32,22 +32,7 @@ class TestExecuteDravidCommand(unittest.TestCase):
         self.metadata_manager.get_project_context.return_value = "Test project context"
         mock_get_files.return_value = ["file1.py", "file2.py"]
 
-        mock_stream_api.return_value = """
-        <response>
-            <steps>
-                <step>
-                    <type>shell</type>
-                    <command> echo "hello" </command>
-                </step>
-                <step>
-                    <type>file</type>
-                    <operation>CREATE</operation>
-                    <filename>text.txt</filename>
-                    <content>Test content</content>
-                </step>
-            </steps>
-        </response>
-        """
+        mock_stream_api.return_value = """\n        <response>\n            <steps>\n                <step>\n                    <type>shell</type>\n                    <command> echo "hello" </command>\n                </step>\n                <step>\n                    <type>file</type>\n                    <operation>CREATE</operation>\n                    <filename>text.txt</filename>\n                    <content>Test content</content>\n                </step>\n            </steps>\n        </response>\n        """
         mock_execute_commands.return_value = (
             True, 2, None, "All commands executed successfully")
         mock_run_with_loader.side_effect = lambda f, *args, **kwargs: f()
@@ -75,17 +60,7 @@ class TestExecuteDravidCommand(unittest.TestCase):
         mock_metadata_manager.return_value = self.metadata_manager
         self.metadata_manager.get_project_context.return_value = "Test project context"
         mock_get_files.return_value = ["file1.py", "file2.py"]
-        mock_stream_api.return_value = """
-        <response>
-            <explanation>Test explanation</explanation>
-            <steps>
-                <step>
-                    <type>shell</type>
-                    <command> echo "hello" </command>
-                </step>
-            </steps>
-        </response>
-        """
+        mock_stream_api.return_value = """\n        <response>\n            <explanation>Test explanation</explanation>\n            <steps>\n                <step>\n                    <type>shell</type>\n                    <command> echo "hello" </command>\n                </step>\n            </steps>\n        </response>\n        """
         mock_execute_commands.return_value = (
             False, 1, "Command failed", "Error output")
         mock_handle_error.return_value = True
@@ -98,7 +73,7 @@ class TestExecuteDravidCommand(unittest.TestCase):
             "Failed to execute command at step 1.")
         mock_handle_error.assert_called_once()
         mock_print_info.assert_any_call(
-            "Fix applied successfully. Continuing with the remaining commands.", indent=2)
+            "Fix applied successfully. Continuing with the remaining commands.")
 
     @patch('drd.cli.query.main.Executor')
     @patch('drd.cli.query.main.ProjectMetadataManager')
@@ -127,8 +102,7 @@ class TestExecuteDravidCommand(unittest.TestCase):
                                self.debug, self.instruction_prompt)
 
         mock_call_vision_api.assert_called_once()
-        mock_print_info.assert_any_call(
-            f"Processing image: {self.image_path}", indent=4)
+        mock_print_info.assert_any_call(f"Processing image: {self.image_path}")
 
     @patch('drd.cli.query.main.Executor')
     @patch('drd.cli.query.main.ProjectMetadataManager')
