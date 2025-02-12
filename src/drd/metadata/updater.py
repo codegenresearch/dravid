@@ -7,8 +7,8 @@ from .common_utils import get_ignore_patterns, get_folder_structure, find_file_w
 from ..prompts.metadata_update_prompts import get_files_to_update_prompt
 
 
-async def update_metadata_with_dravid_async(meta_description, current_dir):
-    print_info("Updating metadata based on the provided description...")
+async def update_metadata_with_dravid_async(meta_summary, current_dir):
+    print_info("Updating metadata based on the provided summary...")
     metadata_manager = ProjectMetadataManager(current_dir)
     project_context = metadata_manager.get_project_context()
 
@@ -20,7 +20,7 @@ async def update_metadata_with_dravid_async(meta_description, current_dir):
     print_info(folder_structure)
 
     files_query = get_files_to_update_prompt(
-        project_context, folder_structure, meta_description)
+        project_context, folder_structure, meta_summary)
     files_response = call_dravid_api_with_pagination(
         files_query, include_context=True)
 
@@ -61,29 +61,17 @@ async def update_metadata_with_dravid_async(meta_description, current_dir):
                 file_info = await metadata_manager.analyze_file(found_filename)
 
                 if file_info:
-                    metadata_manager.update_file_metadata(
-                        file_info['path'],
-                        file_info['type'],
-                        file_info['summary'],
-                        file_info['exports'],
-                        file_info['imports']
-                    )
+                    handle_file_metadata(metadata_manager, file_info)
                     print_success(
                         f"Updated metadata for file: {found_filename}")
-
-                    # Handle external dependencies
-                    metadata = file.find('metadata')
-                    if metadata is not None:
-                        external_deps = metadata.find('external_dependencies')
-                        if external_deps is not None:
-                            for dep in external_deps.findall('dependency'):
-                                metadata_manager.add_external_dependency(
-                                    dep.text.strip())
                 else:
                     print_warning(f"Could not analyze file: {found_filename}")
 
             except Exception as e:
                 print_error(f"Error processing {found_filename}: {str(e)}")
+
+        # After processing all files, update the environment info
+        update_environment_info(metadata_manager)
 
         print_success("Metadata update completed.")
     except Exception as e:
@@ -91,6 +79,35 @@ async def update_metadata_with_dravid_async(meta_description, current_dir):
         print_error(f"Raw response: {files_response}")
 
 
-def update_metadata_with_dravid(meta_description, current_dir):
+def handle_file_metadata(metadata_manager, file_info):
+    metadata_manager.update_file_metadata(
+        file_info['path'],
+        file_info['type'],
+        file_info['summary'],
+        file_info['exports'],
+        file_info['imports']
+    )
+
+    dependencies = file_info.get('external_dependencies', [])
+    for dependency in dependencies:
+        metadata_manager.add_external_dependency(dependency)
+
+
+def update_environment_info(metadata_manager):
+    all_languages = set(file['type'] for file in metadata_manager.metadata['key_files']
+                        if file['type'] not in ['binary', 'unknown'])
+    if all_languages:
+        primary_language = max(all_languages, key=lambda x: sum(
+            1 for file in metadata_manager.metadata['key_files'] if file['type'] == x))
+        other_languages = list(all_languages - {primary_language})
+        metadata_manager.update_environment_info(
+            primary_language=primary_language,
+            other_languages=other_languages,
+            primary_framework=metadata_manager.metadata['environment']['primary_framework'],
+            runtime_version=metadata_manager.metadata['environment']['runtime_version']
+        )
+
+
+def update_metadata_with_dravid(meta_summary, current_dir):
     asyncio.run(update_metadata_with_dravid_async(
-        meta_description, current_dir))
+        meta_summary, current_dir))
